@@ -1,26 +1,37 @@
-Inform ATTACK Core by Victor Gijsbers begins here.
+Version 4/120513 of Inform ATTACK Core by Victor Gijsbers begins here.
 
 "The core of the Inform ATTACK system, but without the combat specific code. Think of it as the Advanced Turn-based TActical *Conflict* Kit instead."
 
 "GPL 3 licenced"
 
-[ TODO: Give games a way to replace "combat" with another word in all printed messages. ]
-
 
 
 Volume - Introduction
-
-[Use no deprecated features.]
 
 Section - Authorial modesty (for use with Inform ATTACK by Victor Gijsbers)
 
 [ If we're using the full Inform ATTACK extension then we don't need to be listed in the credits. ]
 Use authorial modesty.
 
+Section - Default texts
+
+[ The author may want to change these texts, so they are collected here in one section. ]
+
+[ Change this if you're not modeling combat ]
+The conflict label is a text variable. The conflict label is "combat".
+
+[ Change these if you indicate in some other way how the player is acting, or if the Act/React cycle doesn't make sense for your situation. ]
+The peaceful prompt is a text variable. The peaceful prompt is ">".
+The action prompt is a text variable. The action prompt is "Act>".
+The reaction prompt is a text variable. The reaction prompt is "React>".
+
 Section - I6 variables
 
-The meta flag is a truth state variable.
-The meta flag variable translates into I6 as "meta".
+The meta flag is a truth state variable. The meta flag variable translates into I6 as "meta".
+The yourself text is a text variable. The yourself text variable translates into I6 as "YOURSELF__TX".
+
+[ Normally you can't set a person variable to no one, but you can like this! ]
+The stand in for no one is a person variable. The stand in for no one variable translates into I6 as "nothing".
 
 Section - Saying combat numbers
 
@@ -31,73 +42,28 @@ The numbers boolean is a truth state variable. The numbers boolean is true.
 
 Checking the numbers boolean is an action out of world. Understand "numbers" as checking the numbers boolean.
 Carry out checking the numbers boolean (this is the standard checking the numbers boolean rule):
-	say "Combat-related numbers will be [if the numbers boolean is true]displayed[otherwise]hidden[end if].".
+	say "[The conflict label in sentence case]-related numbers will be [if the numbers boolean is true]displayed[otherwise]hidden[end if].".
 
 Switching the numbers off is an action out of world. Understand "numbers off" as switching the numbers off.
 Carry out switching the numbers off (this is the standard switching the numbers off rule):
 	now the numbers boolean is false;
-	say "You will no longer see combat-related numbers.".
+	say "You will no longer see [the conflict label]-related numbers.".
 
 Switching the numbers on is an action out of world. Understand "numbers on" as switching the numbers on.
 Carry out switching the numbers on (this is the standard switching the numbers on rule):
 	now the numbers boolean is true;
-	say "You will now see combat-related numbers.".
+	say "You will now see [the conflict label]-related numbers.".
 
 Section - Referring to the player
 
 [ See manual section 2.1.3 ]
 
 [ When we talk about the player in combat events, we do not want to say "yourself". ]
-[ TODO: test properly ]
+When play begins (this is the change the yourself text rule):
+	now the yourself text is "you".
 
-[ Firstly we set a variable when printing combat participants. ]
-[Yourself to you is a truth state variable. Yourself to you is false.
-
-Before printing the name of the main actor (this is the main actor name printing rule):
-	now yourself to you is true;
-
-After printing the name (this is the reset yourself to you rule):
-	now yourself to you is false;
-
-[ Now we alter the standard name printing rule to use this variable. ]
-The ATTACK name printing rule is listed instead of the Standard name printing rule in the for printing the name rules.
-The ATTACK name printing rule translates into I6 as "ATTACK_NAME_PRINTING_R".
-Include (-
-
-[ ATTACK_NAME_PRINTING_R obj;
-	obj = parameter_object;
-	if (obj == 0) {
-		print (string) NOTHING__TX; return;
-	}
-	switch (metaclass(obj)) {
-		Routine: print "<routine ", obj, ">"; return;
-		String: print "<string ~", (string) obj, "~>"; return;
-		nothing: print "<illegal object number ", obj, ">"; return;
-	}
-	if (obj == player) {
-		if (indef_mode == NULL && caps_mode) print (string) YOU__TX;
-		! Print you if Yourself to you is true
-		else if ( (+ Yourself to you +) ) print "you";
-		else print (string) YOURSELF__TX;
-		return;
-	}
-	#Ifdef LanguagePrintShortName;
-	if (LanguagePrintShortName(obj)) return;
-	#Endif; ! LanguagePrintShortName
-	if (indef_mode && obj.&short_name_indef ~= 0 &&
-		PrintOrRun(obj, short_name_indef, true) ~= 0) return;
-	if (caps_mode &&
-		obj.&cap_short_name ~= 0 && PrintOrRun(obj, cap_short_name, true) ~= 0) {
-		caps_mode = false;
-		return;
-	}
-	if (obj.&short_name ~= 0 && PrintOrRun(obj, short_name, true) ~= 0) return;
-	print (object) obj;
-];
-
--);]
-
-
+[ TODO: put back yourself where it is needed! ]
+	
 
 
 Volume - The main system
@@ -110,8 +76,9 @@ Section - Life and death
 
 [ Many rules depend on whether someone is alive or not. You may not need a full health system, but it's easier just to put it all here. Ignore if you like. ]
 A person has a number called health. The health of a person is usually 10.
+
 [ Once health drops to zero, you are dead. This holds true for both the player and his enemies. ]
-Definition: A person is alive if its health is 1 or more. Definition: A person is killed if its health is 0 or less.
+Definition: A person is alive rather than dead if its health is greater than 0.
 
 [ This printing dead property is used to ensure that statements like "You were killed by the ogre" won't be broken if the ogre died at the same time. ]
 The printing dead property is a truth state variable. The printing dead property is true.
@@ -122,18 +89,16 @@ To say no dead property:
 To say dead property:
 	now the printing dead property is true.
 
-Before printing the name of a killed person (called body) (this is the improper print dead property rule):
-	if the printing dead property is true:
-		if body is improper-named:
-			say "dead [run paragraph on]".
+Before printing the name of a dead person (called body) (this is the improper print dead property rule):
+	if the printing dead property is true and the body is improper-named:
+		say "dead [run paragraph on]".
 
-After printing the name of a killed person (called body) (this is the proper print dead property rule):
-	if the printing dead property is true:
-		if body is proper-named:
-			say "'s [if body is plural-named]bodies[otherwise]body[end if]".
+After printing the name of a dead person (called body) (this is the proper print dead property rule):
+	if the printing dead property is true and the body is proper-named:
+		say "'s [if body is plural-named]bodies[otherwise]body[end if]".
 
-Understand "dead/killed/body/bodies/corpse" as a person when the item described is killed.
-Understand "body/bodies of" as a person when the item described is killed.
+Understand "dead/killed/body/bodies/corpse" as a person when the item described is dead.
+Understand "body/bodies of" as a person when the item described is dead.
 Understand "alive/live/living" as a person when the item described is alive.
 [Understand "[something related by equality]'s" as a person.] [Doesn't work, unfortunately.]
 
@@ -143,10 +108,15 @@ Section - Factions
 
 [ Everyone should belong to a faction. You can add as many factions as you like! ]
 Faction is a kind of value. The factions are friendly, passive and hostile.
+The specification of a faction is "Factions are groups of people who are allied to each other, and may or may not be opposed to the other factions."
 
 [ Now we define a relation between factions which indicates whether these factions will attack each other. ]
-Hating relates factions to each other.
+Hating relates various factions to various factions.
 The verb to hate (he hates, they hate, he hated, it is hated, he is hating) implies the hating relation.
+
+[ The opposing relationship makes it easier to see if two people are antagonists. ]
+Opposing relates a person (called X) to a person (called Y) when the faction of X hates the faction of Y.
+The verb to oppose (he opposes, they oppose, he opposed, it is opposed, he is opposing) implies the opposing relation. 
 
 Friendly hates hostile. Hostile hates friendly.
 
@@ -154,11 +124,10 @@ A person has a faction. A person is usually passive.
 The player is friendly.
 
 [ We need a rulebook to decide whether people are going to battle each other in the current location. If not, we're not going to run all our ATTACK-machinery. ]
-
 The hate rules are a rulebook.	
 
 [ Depreciated - check the combat status instead ]
-To decide whether hate is present:
+To decide whether hate is present (deprecated):
 	consider the hate rules;
 	if rule succeeded:
 		decide yes;
@@ -171,36 +140,44 @@ Last hate rule (this is the standard hate rule):
 		rule succeeds;
 	repeat with X running through alive not passive persons enclosed by the location:
 		repeat with Y running through alive persons enclosed by the location:
-			if the faction of X hates the faction of Y:
+			if X opposes Y:
 				rule succeeds;
 	rule fails.
 
-Section - Person states
+Section - Personal combat state
 
 [ See manual section 2.3.1 ]
 
-[ A person can have four combat states: Inactive, Act, React and Reacted.
+[ A person has one of three combat states: Inactive, Act and React.
 
 Inactive: not doing anything in the current round.
 Act: the one whose turn it is.
-React: this person will be called on to react to the current action.
-Reacted: this person has declared a reaction to the current action. Not needed? ]
+React: this person will be called on to react to the current action. ]
 
-Combat state is a kind of value. The combat states are at-Inactive, at-Act, at-React[ and at-Reacted].
+Combat state is a kind of value. The combat states are at-Inactive, at-Act and at-React.
+The specification of a combat state is "Represents the state of a person in the current combat round. at-Inactive people are no involved, the at-Act person is the main actor, and the at-React person(s) are reacting to the main actor."
 
 A person has a combat state. The combat state of a person is usually at-Inactive.
 
 Section - Combat status
 
 A combat round state is a kind of value. The combat round states are peace, combat, player choosing, reactions, concluding.
-The specification of a combat round state is "Represents the current combat round. ATTACK uses this value type in the combat status global variable.".
+The specification of a combat round state is "Represents the state of the current combat round. This value kind is stored by the combat status global variable, which determines what happens when the combat round rulebook is run."
+
 Definition: a combat round state is in progress if it is not peace and it is not combat.
 
-The combat status is a combat round state variable. The combat status is peace.
+To update the combat status:
+	consider the hate rules;
+	if rule succeeded:
+		now the combat status is combat;
+	otherwise:
+		now the combat status is peace;
 
 
 
 Book - The combat round
+
+The combat status is a combat round state variable. The combat status is peace.
 
 [ The main actor is the person with the highest initiative, or the player if not engaged in combat. ]
 The main actor is a person that varies.
@@ -230,7 +207,7 @@ The fight consequences variable is a truth state that varies. The fight conseque
 Table of Stored Combat Actions
 Combat Speed	Combat Action
 a number	a stored action
-with 20 blank rows
+with 50 blank rows
 
 Section - Altering the turn sequence rules
 
@@ -244,15 +221,11 @@ The generate action rule is not listed in the turn sequence rules.
 Section - Non-combat rules
 
 A first combat round rule when the combat status is not in progress (this is the update the combat status rule):
-	consider the hate rules;
-	if rule succeeded:
-		now the combat status is combat;
-	otherwise:
-		now the combat status is peace.
+	update the combat status;
 
 A combat round rule when the combat status is peace (this is the business as usual rule):
 	now the main actor is the player;
-	now the command prompt is ">";
+	now the command prompt is the peaceful prompt;
 	carry out the running the parser activity;
 	[ Skip the every turn rules for out of world actions ]
 	if the meta flag is true:
@@ -274,23 +247,21 @@ A starting the combat round rule (this is the reset the initiative of the main a
 
 A combat round rule when the combat status is combat (this is the main actor chooses an action rule):
 	if the main actor is the player:
-		now the command prompt is "Act>";
+		now the command prompt is the action prompt;
 		now the combat status is player choosing;
 	otherwise:
 		run the AI rules for the main actor;
 		now the combat status is reactions;
-	rule succeeds;
 
 [ The player now gets to choose an action. This rule is also used for choosing reactions, as the next combat status is the same: reactions.
 This rule will loop until an appropriate action is chosen. ]
 A combat round rule when the combat status is player choosing (this is the player chooses an action or reaction rule):
 	carry out the running the parser activity;
 	if take no time boolean is false:
-		[if the combat state of the player is at-React:
-			now the combat state of the player is at-Reacted;]
 		if the combat state of the player is at-Act:
 			now the main actor's action is the action name part of the current action;
 		now the combat status is reactions;
+		make no decision;
 	rule succeeds;
 
 A combat round rule when the combat status is reactions (this is the AI chooses a reaction rule):
@@ -299,12 +270,11 @@ A combat round rule when the combat status is reactions (this is the AI chooses 
 		[ We must check that the participant is still alive as they could have been killed by an action that didn't wait for a reaction. ]
 		if P is alive and the combat state of P is at-React:
 			if P is the player:
-				now the command prompt is "React>";
+				now the command prompt is the reaction prompt;
 				now the combat status is player choosing;
 				rule succeeds;
 			otherwise:
 				run the AI rules for P;
-				[now the combat state of P is at-Reacted;]
 	now the combat status is concluding;
 
 A combat round rule when the combat status is concluding (this is the run delayed actions rule):
@@ -319,7 +289,7 @@ A combat round rule when the combat status is concluding (this is the conclude t
 	[ Reset everyone to Inactive so that they'll have the right state in the next turn whether it's peace or combat. ]
 	repeat with X running through all alive persons enclosed by the location:
 		now the combat state of X is at-Inactive;
-	now the combat status is combat;
+	update the combat status;
 
 [ And if we get this far then we actually get to run the every turn rules! ]
 
@@ -404,22 +374,46 @@ After running the parser (this is the all out of world actions are fast rule):
 	if the meta flag is true:
 		now the take no time boolean is true.
 
-Section - Fast standard actions
+Section - Examining is fast
 
 Examining something is acting fast.
+
+Section - Taking inventory is fast
+
 Taking inventory is acting fast.
+
+Section - Smelling is fast
+
 Smelling is acting fast.
+
+Section - Smelling something is fast
+
 Smelling something is acting fast.
+
+Section - Looking is fast
+
 Looking is acting fast.
-Looking under something is acting fast.
-Listening is acting fast.
-Listening to something is acting fast.
-Thinking is acting fast.
 
 [ Except for the first time we look... ]
 After looking for the first time (this is the looking at the beginning of the game is not acting fast rule):
 	now the take no time boolean is false;
 	continue the action.
+
+Section - Looking under is fast
+
+Looking under something is acting fast.
+
+Section - Listening is fast
+
+Listening is acting fast.
+
+Section - Listening to is fast
+
+Listening to something is acting fast.
+
+Section - Thinking is fast
+
+Thinking is acting fast.
 	
 Section - Going is slow unindexed
 
@@ -464,7 +458,6 @@ The chosen target is a person variable.
 Chapter - The pressing relation
 
 [ Pressing is mostly just a way to remember who had been attacking whom. The AI prefers continuing to attack the same person. ]
-[ TODO: Can we change this to Pressing relates various people to one person. ? ]
 Pressing relates various people to various people. The verb to press (he presses, they press, he pressed, it is pressed, he is pressing) implies the pressing relation.
 
 [ This phrase takes care of the pressing relations ]
@@ -473,6 +466,8 @@ To have (A - a person) start pressing (B - a person):
 		now A does not press X;
 	now A presses B.
 
+
+
 Chapter - Selecting a target
 
 Table of AI Combat Person Options
@@ -480,46 +475,62 @@ Person	Target weight
 a person	a number
 with 50 blank rows
 
-The standard AI target select rules are a person based rulebook producing a number.
-The standard AI target select rulebook has a number called the Weight.
+The standard AI target selection rules are a person based rulebook producing a number.
+The standard AI target selection rulebook has a number called the Weight.
 
-A first Standard AI rule for an at-Act person [(called main actor)] (this is the select a target rule):
-	blank out the whole of the Table of AI Combat Person Options;
-	repeat with target running through all alive persons enclosed by the location:
-		if the faction of the main actor hates the faction of target and target is not the main actor:
-			let weight be the number produced by the standard AI target select rules for target;
-			choose a blank Row in the Table of AI Combat Person Options;
-			now the Person entry is target;
-			now the Target weight entry is weight;
+A starting the combat round rule (this is the reset the chosen target rule):
+	now the chosen target is the stand in for no one;
+
+A first Standard AI rule for a person (called P) (this is the select a target rule):
+	[ If we already have a target (see the next rule) don't try to choose one again ]
+	if the chosen target is not the stand in for no one:
+		make no decision;
+	let target count be the number of alive people who are opposed by P enclosed by the location;
 	[ Don't consider further stages if we don't have a target. This won't happen unless you add new factions with uneven hate relationships. ]
-	if the number of filled rows in the Table of AI Combat Person Options is 0:
+	if target count is 0:
 		rule succeeds;
+	if target count is 1:
+		now the chosen target is a random alive person who is opposed by P enclosed by the location;
+		make no decision;
+	[ We have many potential targets to consider the AI target selection rules ]
+	blank out the whole of the Table of AI Combat Person Options;
+	repeat with target running through all alive people who are opposed by P enclosed by the location:
+		let weight be the number produced by the standard AI target selection rules for target;
+		choose a blank Row in the Table of AI Combat Person Options;
+		now the Person entry is target;
+		now the Target weight entry is weight;
 	sort the Table of AI Combat Person Options in random order;
 	sort the Table of AI Combat Person Options in reverse Target weight order;
 	choose row 1 in the Table of AI Combat Person Options;
 	now the chosen target is the Person entry;
 
-A standard AI target select rule for a person (called target) (this is the do not prefer passive targets rule):
+[ Reactors can only choose the main actor. Unlist this rule if you want them to choose someone else. ]
+A first Standard AI rule for an at-React person (called P) (this is the reactors target the main actor rule):
+	now the chosen target is the main actor;
+
+A standard AI target selection rule for a person (called target) (this is the do not prefer passive targets rule):
 	if the target is passive:
 		decrease the Weight by 5;
 
-A standard AI target select rule for a person (called target) (this is the prefer targets you press rule):
+A standard AI target selection rule for a person (called target) (this is the prefer targets you press rule):
 	if the main actor presses the target:
 		increase the Weight by 3;
 
-A standard AI target select rule for a person (called target) (this is the prefer those who press you rule):
+A standard AI target selection rule for a person (called target) (this is the prefer those who press you rule):
 	if the target presses the main actor:
 		increase the Weight by 1;
 
-A standard AI target select rule for a person (called target) (this is the prefer the player rule):
+A standard AI target selection rule for a person (called target) (this is the prefer the player rule):
 	if the target is the player:
 		increase the Weight by 1;
 
-A standard AI target select rule (this is the randomise the target result rule):
+A standard AI target selection rule (this is the randomise the target result rule):
 	increase the Weight by a random number between 0 and 4;
 
-A last standard AI target select rule (this is the return the target weight rule):
+A last standard AI target selection rule (this is the return the target weight rule):
 	rule succeeds with result Weight;
+
+
 
 Chapter - Selecting an action
 
@@ -528,11 +539,11 @@ Option	Action Weight
 a stored action	a number
 with 50 blank rows
 
-The standard AI action select rules are a person based rulebook.
+The standard AI action selection rules are a person based rulebook.
 
-A last Standard AI rule for a person (called P) (this is the select an action rule):
+A last Standard AI rule for a person (called P) (this is the select an action and do it rule):
 	blank out the whole of the Table of AI Combat Options;
-	consider the standard AI action select rules for P;
+	consider the standard AI action selection rules for P;
 	sort the Table of AI Combat Options in random order;
 	sort the Table of AI Combat Options in reverse Action Weight order;
 	choose row one in the Table of AI Combat Options;
@@ -541,7 +552,6 @@ A last Standard AI rule for a person (called P) (this is the select an action ru
 	[ Store it for reactions ]
 	if P is at-Act:
 		now the main actor's action is the action name part of the Option entry;
-	
 
 [ Each potential action should have a First rule which will add the action to the Table of AI Combat Options.  Subsequent rules can then modify the Action Weight.
 
@@ -565,7 +575,7 @@ Carry out an actor waiting (this is the waiting lets someone else go first rule)
 	if the actor is not the player:
 		say "[CAP-actor] wait[s].".]
 
-First standard AI action select rule for a person (called P) (this is the consider waiting rule):
+First standard AI action selection rule for a person (called P) (this is the consider waiting rule):
 	choose a blank Row in the Table of AI Combat Options;
 	now the Option entry is the action of P waiting;
 	now the Action Weight entry is -20;
