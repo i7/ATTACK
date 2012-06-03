@@ -1,4 +1,4 @@
-Version 4/120513 of Inform ATTACK Core by Victor Gijsbers begins here.
+Version 4/120603 of Inform ATTACK Core by Victor Gijsbers begins here.
 
 "The core of the Inform ATTACK system, but without the combat specific code. Think of it as the Advanced Turn-based TActical *Conflict* Kit instead."
 
@@ -17,9 +17,6 @@ Section - Default texts
 
 [ The author may want to change these texts, so they are collected here in one section. ]
 
-[ Change this if you're not modeling combat ]
-The conflict label is a text variable. The conflict label is "combat".
-
 [ Change these if you indicate in some other way how the player is acting, or if the Act/React cycle doesn't make sense for your situation. ]
 The peaceful prompt is a text variable. The peaceful prompt is ">".
 The action prompt is a text variable. The action prompt is "Act>".
@@ -32,27 +29,6 @@ The yourself text is a text variable. The yourself text variable translates into
 
 [ Normally you can't set a person variable to no one, but you can like this! ]
 The stand in for no one is a person variable. The stand in for no one variable translates into I6 as "nothing".
-
-Section - Saying combat numbers
-
-[ See manual section 2.1.2 ]
-
-[ This variable determines whether we see numerical output. ]
-The numbers boolean is a truth state variable. The numbers boolean is true.
-
-Checking the numbers boolean is an action out of world. Understand "numbers" as checking the numbers boolean.
-Carry out checking the numbers boolean (this is the standard checking the numbers boolean rule):
-	say "[The conflict label in sentence case]-related numbers will be [if the numbers boolean is true]displayed[otherwise]hidden[end if].".
-
-Switching the numbers off is an action out of world. Understand "numbers off" as switching the numbers off.
-Carry out switching the numbers off (this is the standard switching the numbers off rule):
-	now the numbers boolean is false;
-	say "You will no longer see [the conflict label]-related numbers.".
-
-Switching the numbers on is an action out of world. Understand "numbers on" as switching the numbers on.
-Carry out switching the numbers on (this is the standard switching the numbers on rule):
-	now the numbers boolean is true;
-	say "You will now see [the conflict label]-related numbers.".
 
 Section - Referring to the player
 
@@ -83,11 +59,16 @@ Definition: A person is alive rather than dead if its health is greater than 0.
 [ This printing dead property is used to ensure that statements like "You were killed by the ogre" won't be broken if the ogre died at the same time. ]
 The printing dead property is a truth state variable. The printing dead property is true.
 
-To say no dead property:
+To say no dead property (deprecated):
 	now the printing dead property is false.
 
-To say dead property:
+To say dead property (deprecated):
 	now the printing dead property is true.
+	
+To say the name of (P - a person):
+	now the printing dead property is false;
+	say the P;
+	now the printing dead property is true;
 
 Before printing the name of a dead person (called body) (this is the improper print dead property rule):
 	if the printing dead property is true and the body is improper-named:
@@ -116,7 +97,7 @@ The verb to hate (he hates, they hate, he hated, it is hated, he is hating) impl
 
 [ The opposing relationship makes it easier to see if two people are antagonists. ]
 Opposing relates a person (called X) to a person (called Y) when the faction of X hates the faction of Y.
-The verb to oppose (he opposes, they oppose, he opposed, it is opposed, he is opposing) implies the opposing relation. 
+The verb to oppose (he opposes, they oppose, he opposed, it is opposed, he is opposing) implies the opposing relation.
 
 Friendly hates hostile. Hostile hates friendly.
 
@@ -135,7 +116,7 @@ To decide whether hate is present (deprecated):
 		decide no.
 
 Last hate rule (this is the standard hate rule):
-	[ This is only here for speed. It is the most common case where we decide yes. ]
+	[ This is for speed. It is the most common case where we decide yes. ]
 	if the player is a friendly alive person and friendly hates hostile and at least one hostile alive person is enclosed by the location:
 		rule succeeds;
 	repeat with X running through alive not passive persons enclosed by the location:
@@ -185,6 +166,8 @@ The main actor is a person that varies.
 [ Can we get away with just storing the action name? The noun/second noun should be known already. ]
 The main actor's action is an action name variable.
 
+The player did something is a truth state variable.
+
 [ The list of current participants, and a phrase to shift the next one. ]
 The participants list is a list of people that varies.
 
@@ -193,16 +176,19 @@ To decide which person is the next participant:
 	remove entry 1 from the participants list;
 	decide on P;
 
+[ Who the AI is currently targetting ]
+The chosen target is a person variable.
+
+[ Actions can wait for reactions by running in two stages:
+	1. First when running delayed actions is false. In this stage they should set the target's state to at-React, and add a stored action to the Table of Stored Combat Actions. The combat speed column is for the possibility of a fast reaction that should take place before the action does.
+	2. Second when running delayed actions is false is true. By this time the target has selected a reaction, and the action really occurs. ]
+Running delayed actions is a truth state that varies. Running delayed actions is false.
+
 Chapter - The combat round rules
 
 The combat round rules is a rulebook.
 
 The starting the combat round rules are a rulebook.
-
-[ Actions can wait for reactions by running in two stages:
-	1. First they run when fight consequences is false. In this stage they should set the target's state to at-React, and add a stored action to the Table of Stored Combat Actions. The combat speed column is for the possibility of a fast reaction that should take place before the action does.
-	2. Second they run when fight consequences is true. By this time the target has selected a reaction, and the action really occurs. ]
-The fight consequences variable is a truth state that varies. The fight consequences variable is false.
 
 Table of Stored Combat Actions
 Combat Speed	Combat Action
@@ -212,11 +198,18 @@ with 50 blank rows
 Section - Altering the turn sequence rules
 
 [ We replace the beginning of the turn sequence rules with the combat round rules. We abide by the rulebook so that fast actions can pass a signal all the way up to make the turn sequence rules stop after the combat round rules. ]
-
 This is the abide by the combat round rules rule:
 	abide by the combat round rules.
 The abide by the combat round rules rule is listed instead of the parse command rule in the turn sequence rules.
 The generate action rule is not listed in the turn sequence rules.
+
+[ The turn count should be incremented only if the player faced the command prompt. The time of day however will change regardless. ]
+A turn sequence rule when the combat status is combat (this is the only active players increment the turn count rule):
+	if the player did something is true:
+		now the player did something is false;
+	otherwise:
+		decrement the turn count.
+The only active players increment the turn count rule is listed after the advance time rule in the turn sequence rules.
 
 Section - Non-combat rules
 
@@ -261,6 +254,7 @@ A combat round rule when the combat status is player choosing (this is the playe
 		if the combat state of the player is at-Act:
 			now the main actor's action is the action name part of the current action;
 		now the combat status is reactions;
+		now the player did something is true;
 		make no decision;
 	rule succeeds;
 
@@ -278,12 +272,12 @@ A combat round rule when the combat status is reactions (this is the AI chooses 
 	now the combat status is concluding;
 
 A combat round rule when the combat status is concluding (this is the run delayed actions rule):
-	now the fight consequences variable is true;
+	now running delayed actions is true;
 	sort the Table of Stored Combat Actions in Combat Speed order;
 	repeat through the Table of Stored Combat Actions:
 		try the Combat Action entry;
 		blank out the whole row;
-	now the fight consequences variable is false;
+	now running delayed actions is false;
 
 A combat round rule when the combat status is concluding (this is the conclude the combat round rule):
 	[ Reset everyone to Inactive so that they'll have the right state in the next turn whether it's peace or combat. ]
@@ -395,9 +389,8 @@ Section - Looking is fast
 Looking is acting fast.
 
 [ Except for the first time we look... ]
-After looking for the first time (this is the looking at the beginning of the game is not acting fast rule):
+Last startup rule (this is the looking at the beginning of the game is not acting fast rule):
 	now the take no time boolean is false;
-	continue the action.
 
 Section - Looking under is fast
 
@@ -435,8 +428,6 @@ After looking (this is the second make sure that going is not acting fast rule):
 
 Volume - AI
 
-Chapter - Setup
-
 [ Each person has an activity which controls what they do. It is person based so that the person themself is fed back into it. ]
 
 A person has a person based rulebook called the AI rules.
@@ -453,18 +444,15 @@ To run the AI rules for (P - a person):
 	
 These choices are made by a series of rulebooks which alter the weighting of each potential target/weapon/action. ]
 
-The chosen target is a person variable.
-
 Chapter - The pressing relation
 
-[ Pressing is mostly just a way to remember who had been attacking whom. The AI prefers continuing to attack the same person. ]
+[ Pressing is mostly just a way to remember who had been attacking whom. The AI prefers continuing to attack the same person. It would be possible for someone to press multiple targets, but the phrase below will normally ensure that does not happen. ]
 Pressing relates various people to various people. The verb to press (he presses, they press, he pressed, it is pressed, he is pressing) implies the pressing relation.
 
-[ This phrase takes care of the pressing relations ]
+[ This phrase takes care of the pressing relationship ]
 To have (A - a person) start pressing (B - a person):
-	repeat with X running through all persons pressed by A:
-		now A does not press X;
-	now A presses B.
+	now A presses no one;
+	now A presses B;
 
 
 

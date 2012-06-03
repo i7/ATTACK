@@ -1,4 +1,4 @@
-Version 4/120513 of Inform ATTACK by Victor Gijsbers begins here.
+Version 4/120603 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -6,17 +6,37 @@ Version 4/120513 of Inform ATTACK by Victor Gijsbers begins here.
 
 
 
-Volume - Inclusions
+Volume - Introduction
 
 Include Inform ATTACK Core by Victor Gijsbers.
 Include Plurality by Emily Short.
+
+Section - Saying combat numbers
+
+[ See manual section 2.1.2 ]
+
+[ This variable determines whether we see numerical output. ]
+The numbers boolean is a truth state variable. The numbers boolean is true.
+
+Checking the numbers boolean is an action out of world. Understand "numbers" as checking the numbers boolean.
+Carry out checking the numbers boolean (this is the standard checking the numbers boolean rule):
+	say "Combat-related numbers will be [if the numbers boolean is true]displayed[otherwise]hidden[end if].".
+
+Switching the numbers off is an action out of world. Understand "numbers off" as switching the numbers off.
+Carry out switching the numbers off (this is the standard switching the numbers off rule):
+	now the numbers boolean is false;
+	say "You will no longer see combat-related numbers.".
+
+Switching the numbers on is an action out of world. Understand "numbers on" as switching the numbers on.
+Carry out switching the numbers on (this is the standard switching the numbers on rule):
+	now the numbers boolean is true;
+	say "You will now see combat-related numbers.".
 
 
 
 Volume - The Main System
 
 [The Main System covers the basics of combat, and creates rulebooks for all other systems to fit into.]
-
 
 
 
@@ -56,14 +76,14 @@ To fully heal (patient - a person):
 	if the permanent health of the patient is greater than the health of the patient:
 		restore the health of the patient.
 
-The healed amount is a number that varies. The healed amount is usually 0.
+[The healed amount is a number that varies. The healed amount is usually 0.]
 
 To heal (patient - a person) for (health - a number) health:
 	let the health dummy be the permanent health of the patient minus the health of the patient;
 	if health is less than the health dummy, now the health dummy is health;
 	if the health dummy is less than 0, now the health dummy is 0;
 	increase the health of the patient by the health dummy;
-	now the healed amount is the health dummy. [For storage.]
+	[now the healed amount is the health dummy.] [For storage.]
 
 Chapter - Basic Combat Stats
 
@@ -75,21 +95,115 @@ A person has a number called defence. The defence of a person is usually 7.
 
 
 
+Book - Weapons
+
+Chapter - The weapon kind
+
+A weapon is a kind of thing.
+
+[ A readied weapon is one that is not just carried by the actor, but actually in use. ]
+A weapon is either readied or not readied. A weapon is usually not readied.
+
+After printing the name of a readied weapon while taking inventory (this is the readied inventory listing rule):
+	say " (readied)".
+
+[ The damage die is the die size used to calculate damage. Base damage dealt by the weapon is 1d(damage die) + weapon damage bonus. So a standard weapon deals 1d6 damage; a weapon with a damage die of 0 and a weapon damage bonus of 5 always deals 5 damage, and so on. Negative damage die is counted as 0, but negative weapon damage bonus is possible. ]
+A weapon has a number called the damage die. The damage die of a weapon is usually 6.
+A weapon has a number called the weapon damage bonus. The weapon damage bonus of a weapon is usually 0.
+
+[The dodgability of a weapon is the bonus a defender gets against it when dodging.]
+A weapon has a number called the dodgability. The dodgability of a weapon is usually 2.
+
+[The passive parry max is the maximum bonus a defender can get when parrying AGAINST this weapon.]
+A weapon has a number called the passive parry max. The passive parry max is usually 2.
+
+[The active parry max is the maximum bonus a defender can get when parrying WITH this weapon.]
+A weapon has a number called the active parry max. The active parry max is usually 2.
+
+Section - Weapon attack bonus
+
+A weapon has a number called the weapon attack bonus. The weapon attack bonus of a weapon is usually 0.
+
+A calculating the attack roll rule (this is the attack bonus from weapon rule):
+	let n be the weapon attack bonus of the global attacker weapon;
+	if the numbers boolean is true:
+		if n is greater than 0:
+			say " + ", n, " ([the global attacker weapon] bonus)[run paragraph on]";
+		if n is less than 0:
+			say " - ", 0 minus n, " ([the global attacker weapon] penalty)[run paragraph on]";
+	increase the roll by n.
+
+Chance to win rule (this is the CTW attack bonus from weapon rule):
+	increase the chance-to-win by the weapon attack bonus of the chosen weapon.
+
+Section - Natural weapons
+
+A natural weapon is a kind of weapon.
+A natural weapon is part of every person.
+A natural weapon is usually privately-named.
+
+Instead of examining a natural weapon (this is the standard description of a natural weapon rule):
+	say "Clenched fists, kicking feet--that kind of stuff.".
+
+The damage die of a natural weapon is usually 3. The dodgability of a natural weapon is usually 2. The passive parry max of a natural weapon is usually 2. The active parry max of a natural weapon is usually 0.
+
+Does the player mean readying a natural weapon:
+	it is very unlikely.
+
+Section - Making sure a weapon is always readied
+
+To ready natural weapons (deprecated):
+	repeat with X running through all alive persons enclosed by the location:
+		if X encloses no readied weapon:
+			let item be a random natural weapon part of X;
+			now item is readied.
+
+When play begins (this is the ready weapons for everyone rule):
+	repeat with X running through all alive persons:
+		if X encloses no readied weapon:
+			if X carries at least one weapon:
+				let item be a random weapon carried by X;
+				now item is readied;
+			otherwise:
+				let item be a random natural weapon part of X;
+				now item is readied.
+
+A starting the combat round rule (this is the ready natural weapons rule):
+	repeat with X running through all alive persons enclosed by the location:
+		if X encloses no readied weapon:
+			let item be a random natural weapon part of X;
+			now item is readied;
+
+Section - Unreadying weapons
+
+After dropping a readied weapon (this is the unready on dropping rule):
+	now the noun is not readied;
+	continue the action.
+
+After putting on a readied weapon (this is the unready on putting on rule):
+	now the noun is not readied;
+	continue the action.
+
+After inserting into a readied weapon (this is the unready on inserting rule):
+	now the noun is not readied;
+	continue the action.
+
+
+
 Book - Combat Round
 
-A person has a person called the provoker.
-A person has an action-name called the provocation.
+[A person has a person called the provoker.
+A person has an action-name called the provocation.]
 
 Chapter - Setting up the Combat Order
 
 Section - Initiative
 
 An aftereffects rule (this is the modify initiative based on combat results rule):
-	if the final damage is greater than 0 begin;
+	if the final damage is greater than 0:
 		decrease the initiative of the global defender by 2;
-	otherwise;
+	otherwise:
 		decrease the initiative of the global attacker by 2;
-	end if.
 
 
 
@@ -97,161 +211,187 @@ Book - Striking a Blow
 
 Chapter - Striking a blow
 
-The global attacker is a person that varies.
-The global defender is a person that varies.
+The global attacker is a person variable.
+The global defender is a person variable.
+The global attacker weapon is a weapon variable.
+The global defender weapon is a weapon variable.
 
-A weapon is a kind of thing. A weapon is either readied or not readied. A weapon is usually not readied.
+The attack roll is a number variable.
+The final damage is a number variable.
 
-The global attacker weapon is a weapon that varies.
-The global defender weapon is a weapon that varies.
+[ The old system has been converted into an activity. Instead of the old entry point system we now have:
+	1: does attacking begin?
+		add before striking a blow rules 
+	2: preliminary results of attacking
+		add last before striking a blow rules
+	3-6: basic attack roll, apply the attack modifiers, calculate results of the attack roll, show results of the attack roll
+		these have been combined into the calculating the attack roll rules
+	7: did the attack hit?
+		unchanged
+	8: immediate results of hitting
+		unchanged
+	9-12: rolling the die for damage, modifying the damage, calculating the final damage, showing the damage
+		these have been combined into the dealing damage rules
+	13: pre-prose-generation effects
+		unchanged
+	14: reporting the results of the blow
+		unchanged
+	15: aftereffects
+		unchanged
+	16: remove temporary circumstances
+		renamed to the remove temporary circumstances rules but otherwise unchanged
+	17: final report
+		unchanged
+]
 
-The to-hit roll is a number that varies. The to-hit modifier is a number that varies. The damage is a number that varies. The damage modifier is a number that varies. The final damage is a number that varies.
+Striking a blow something is an activity on a stored action.
+The striking a blow activity has a truth state called the blow proceeded.
 
-The reset combat variables is a rulebook.
-The whether attacking begins is a rulebook.
-The preliminary results of attacking is a rulebook.
-The basic attack roll is a rulebook.
-The attack modifiers is a rulebook.
-The calculate results of the attack roll is a rulebook.
-The show results of the attack roll is a rulebook.
-The whether the attack hit is a rulebook.
-The immediate results of hitting is a rulebook.
-The basic damage roll is a rulebook.
-The damage modifiers is a rulebook.
-The calculate the final damage rules is a rulebook.
-The show the final damage rules is a rulebook.
-The aftereffects before flavour text is a rulebook.
-The print flavour text is a rulebook.
-The aftereffects is a rulebook.
-The take away until attack circumstances is a rulebook.
-The final blow report is a rulebook.
+[ These rules are used to reset anything after an attack is made, regardless of what happens. ]
+The remove temporary circumstances rules is a rulebook.
 
-To make (attacker - a person) strike a blow against (defender - a person):
-	now the global attacker is the attacker;
-	now the global defender is the defender;
-	have the global attacker start pressing the global defender;
+[ Set up the essential blow striking variables ]
+First before striking a blow [for] a stored action (called A) (this is the reset the striking a blow variables rule):
+	now the global attacker is the actor part of A;
+	now the global defender is the noun part of A;
 	now the global attacker weapon is a random readied weapon enclosed by the global attacker;
 	now the global defender weapon is a random readied weapon enclosed by the global defender;
-	consider the reset combat variables rules;
-	consider the whether attacking begins rules; [Stage 1: Whether attacking begins]
-	if rule failed:
-		consider the take away until attack circumstances rulebook;
-		rule fails;
-	consider the preliminary results of attacking rules; [Stage 2: Preliminary results of attacking]
-	consider the basic attack roll rules; [Stage 3: Basic attack roll]
-	consider the attack modifiers rules; [Stage 4: Apply attack modifiers]
-	consider the calculate results of the attack roll rules; [Stage 5: calculate results of the attack roll]
-	consider the show results of the attack roll rules; [Stage 6: calculate results of the attack roll] [TEST: ; -> ., check whether new Inform still crashes]
-	consider the whether the attack hit rules; [Stage 7: check and report whether we hit]
-	if rule succeeded:
-		abide by the immediate results of hitting rules; [Stage 8: stage for some special effects]
-		consider the basic damage roll rules; [Stage 9: roll the die for damage]
-		consider the damage modifiers rules; [Stage 10: add or subtract modifiers]
-		consider the calculate the final damage rules; [Stage 11: calculate final damage]
-		consider the show the final damage rules; [Stage 12: print the damage]
-	consider the aftereffects before flavour text rulebook; [Stage 13: anything that must happen before flavour text is printed.]
-	consider the print flavour text rules; [Stage 14: flavour text]
-	if the player is alive:
-		consider the aftereffects rulebook; [Stage 15: aftereffects]
-	consider the take away until attack circumstances rulebook; [Stage 16: taking away anything that lasts until you have attacked]
-	consider the final blow report rulebook. [Stage 17: any reporting left to be done]
-
-Section - Reset combat variables
-
-A reset combat variables rule (this is the standard reset combat variables rule):
-	now the damage is 0; 
+	have the global attacker start pressing the global defender;
 	now the final damage is 0;
-	now the to-hit roll is 0;
-	now the to-hit modifier is 0;
-	now the damage modifier is 0.
 
-Section - Basic attack roll
+Last before striking a blow (this is the blow was not averted rule):
+	now blow proceeded is true.
 
-A basic attack roll rule (this is the standard attack roll rule):
-	now the to-hit roll is a random number between 1 and 10;
-		say "[italic type]Rolling ", the to-hit roll, "[run paragraph on]".
+For striking a blow when the blow proceeded is false (this is the stop the attack if it was averted rule):
+	consider the remove temporary circumstances rules;
+	rule fails;
 
-Section - Attack modifier melee
+First after striking a blow when the blow proceeded is false (this is the no aftereffects if the attack was averted rule):
+	rule fails;
 
-An attack modifiers rule (this is the melee attack bonus rule):
-	if the numbers boolean is true and the melee of the global attacker is not 0:
-		if the melee of the global attacker is greater than 0:
-			say " + ", the melee of the global attacker, " (inherent bonus)[run paragraph on]";
+
+
+Section - Calculating the attack roll
+
+The calculating the attack roll rules are a rulebook producing a number.
+The calculating the attack roll rulebook have a number called the roll.
+
+Rule for striking a blow (this is the consider the calculating the attack roll rules rule):
+	now the attack roll is the number produced by the calculating the attack roll rules;
+	continue the activity.
+
+First calculating the attack roll rule (this is the standard attack roll rule):
+	now the roll is a random number between 1 and 10;
+	if the numbers boolean is true:
+		say "[italic type]Rolling ", the roll, "[run paragraph on]".
+
+A calculating the attack roll rule (this is the melee attack bonus rule):
+	let the attacker's melee be the melee of the global attacker;
+	if the numbers boolean is true and the attacker's melee is not 0:
+		if the the attacker's melee is greater than 0:
+			say " + ", the attacker's melee, " (inherent bonus)[run paragraph on]";
 		otherwise:
-			say " - ", 0 minus the melee of the global attacker, " (inherent penalty)[run paragraph on]";
-	increase the to-hit modifier by the melee of the global attacker.
+			say " - ", 0 minus the attacker's melee, " (inherent penalty)[run paragraph on]";
+	increase the roll by the attacker's melee;
 
-Section - Calculate results of attack roll
+Last calculating the attack roll rule (this is the standard show results of the attack roll rule):
+	if the numbers boolean is true:
+		say " = ", the roll, ", [run paragraph on]";
 
-A calculate results of the attack roll rule (this is the standard calculate results of the attack roll rule):
-	increase the to-hit roll by the to-hit modifier.
+Last calculating the attack roll rule (this is the standard calculate results of the attack roll rule):
+	rule succeeds with result the roll;
 
-Section - Show results of attack roll
 
-A show results of the attack roll rule (this is the standard show results of the attack roll rule): 
-	if the numbers boolean is true, say " = ", the to-hit roll, ", [run paragraph on]".
 
-Section - Whether the attack hits
+Section - Whether the attack hits & the immediate results of hitting
 
-A whether the attack hit rule (this is the standard whether the attack hit rule):
-	if the to-hit roll is greater than the defence of the global defender:
+The whether the attack hit rules is a rulebook.
+
+Rule for striking a blow (this is the abide by the whether the attack rules rule):
+	abide by the whether the attack hit rules;
+	continue the activity;
+
+Rule for whether the attack hit (this is the standard whether the attack hit rule):
+	if the attack roll is greater than the defence of the global defender:
 		if the numbers boolean is true:
 			say "[the global attacker] beat[s] [possessive of global defender] defence rating of ", the defence of the global defender, ".";
-		rule succeeds;
+		continue the activity;
 	otherwise:
 		if the numbers boolean is true:
 			say "[the global attacker] do[es] not overcome [possessive of global defender] defence rating of ", the defence of the global defender, "[roman type].";
 		rule fails;
 
-Section - Basic damage roll
+The immediate results of hitting rules is a rulebook.
 
-First basic damage roll rule (this is the standard damage roll rule):
-	now damage is 0;
+Rule for striking a blow (this is the abide by the immediate results of hitting rules rule):
+	abide by the immediate results of hitting rules;
+	continue the activity;
+
+
+
+Section - Dealing damage
+
+The dealing damage rules are a rulebook producing a number.
+The dealing damage rulebook have a number called the damage.
+
+Rule for striking a blow (this is the consider the dealing damage rules rule):
+	now the final damage is the number produced by the dealing damage rules;
+	continue the activity.
+
+First dealing damage rule (this is the standard damage roll rule):
 	unless damage die of the global attacker weapon is less than 1:
 		now the damage is a random number between 1 and the damage die of the global attacker weapon;
-	increase damage by weapon damage bonus of the global attacker weapon; [1d(damage die) + WDB]
+	increase the damage by weapon damage bonus of the global attacker weapon; [1d(damage die) + WDB]
 	if the numbers boolean is true:
-		say "[The global attacker] deal[s] ", damage, "[run paragraph on]".
+		say "[The global attacker] deal[s] ", the damage, "[run paragraph on]".
 
-Section - Calculating the final damage
+Last dealing damage rule (this is the can't deal negative damage rule):
+	if the damage is less than 0:
+		now the damage is 0;
 
-Calculate the final damage rule (this is the standard calculate the final damage rule):
-	now the final damage is the damage plus the damage modifier;
-	if the final damage is less than 0, now the final damage is 0.
-	
-Section - Showing the final damage
-
-Show the final damage rule (this is the standard show the final damage rule):
+Last dealing damage rule (this is the standard show the damage dealt rule):
 	if the numbers boolean is true:
-		say " = [bold type]", final damage, " damage[roman type][italic type], [run paragraph on]".
-
-Last show the final damage rule (this is the standard report result of blow in numbers mode rule):
-	if the numbers boolean is true:
+		say " = [bold type]", the damage, " damage[roman type][italic type], ";
 		[no damage]
-		if the final damage is less than 1:
+		if the the damage is less than 1:
 			say "allowing [the global defender] to escape unscathed.[run paragraph on]";
 		otherwise:
 			[non-fatal]
-			if the final damage is less than the health of the global defender:
-				say "wounding [the global defender] to ", health of the global defender minus final damage, " health.[run paragraph on]" ;
+			if the the damage is less than the health of the global defender:
+				say "wounding [the global defender] to ", health of the global defender minus the damage, " health.[run paragraph on]" ;
 			[fatal]
 			otherwise:
-				say "killing [no dead property][the global defender][dead property].[run paragraph on]";
+				say "killing [the name of the global defender].[run paragraph on]";
 		say "[roman type][paragraph break]";
 
+Last dealing damage rule (this is the return the damage dealt rule):
+	rule succeeds with result the damage;
+
+
+
 Section - Aftereffects before flavour text
+
+The aftereffects before flavour text rules is a rulebook.
+
+After striking a blow (this is the consider the aftereffects before flavour text rules rule):
+	consider the aftereffects before flavour text rules;
 
 Aftereffects before flavour text (this is the subtract damage from health rule):
 	decrease the health of the global defender by the final damage.
 
+
+
 Section - Flavour text rules
+
+The print flavour text rules is a rulebook.
+
+After striking a blow (this is the consider the print flavour text rules rule):
+	consider the print flavour text rules;
 
 The intervening flavour text are a rulebook. [Use this to intervene in the normal procedure.]
 The flavour are a rulebook. [In non-fatal cases]
 The fatal player flavour are a rulebook. [When the player is killed.]
 The fatal flavour are a rulebook. [When someone else is killed.]
-
-The attack move flavour are a rulebook. [When someone attacks, before the other person reacts.]
 
 A print flavour text rule (this is the flavour text structure rule):
 	abide by the intervening flavour text rules;
@@ -271,22 +411,36 @@ Last flavour rule (this is the basic flavour rule):
 	continue the action.
 
 Last fatal player flavour rule (this is the basic fatal player flavour rule):
-	say "You are killed by [no dead property][the global attacker][dead property].".
+	say "You are killed by [the name of the global attacker].".
 
 Last fatal flavour rule (this is the basic fatal flavour rule):
-	say "[The global attacker] kill[s] [no dead property][the global defender][dead property].".
+	say "[The global attacker] kill[s] [the name of the global defender].".
 
-Last attack move flavour rule (this is the basic attack move flavour rule):
-	if the actor is not the player:
-		say "[The actor] lung[es] towards [the noun].[paragraph break]".
+
 
 Section - Aftereffects
+
+The aftereffects rules is a rulebook.
+
+After striking a blow (this is the consider the aftereffects rules rule):
+	if the player is alive:
+		consider the aftereffects rules;
 
 An aftereffects rule (this is the unready weapons of dead person rule):
 	if the global defender is dead:
 		now all readied weapons enclosed by the global defender are not readied;
 
+After striking a blow (this is the consider the remove temporary circumstances rules rule):
+	consider the remove temporary circumstances rules;
+
+
+
 Section - Final blow report
+
+The final blow report rules is a rulebook.
+
+After striking a blow (this is the consider the final blow report rules rule):
+	consider the final blow report rules;
 
 Last final blow report rule (this is the end reporting blow with paragraph break rule):
 	say "[paragraph break]".
@@ -294,6 +448,49 @@ Last final blow report rule (this is the end reporting blow with paragraph break
 
 
 Book - Standard Combat Actions
+
+Chapter - Readying
+
+Readying is an action applying to one visible thing.
+
+Understand "ready [thing]" as readying. Understand "wield [thing]" and "use [weapon]" as readying.
+
+Does the player mean readying a readied weapon: it is unlikely.
+
+Check readying (this is the cannot ready what is already readied rule):
+	if the noun is readied and the noun is enclosed by the player:
+		take no time;
+		say "You are already wielding [the noun]." instead.
+
+Check readying (this is the cannot ready what is not a weapon rule):
+	if the noun is not a weapon:
+		take no time;
+		say "You can only ready weapons." instead.
+
+First carry out an actor readying (this is the implicit taking when readying rule):
+	if the actor does not enclose the noun:
+		try the actor taking the noun.
+
+Carry out an actor readying (this is the carry out readying when enclosing rule):
+	if the actor encloses the noun:
+		now the noun is readied.
+
+Last carry out an actor readying (this is the unready all other weapons rule):
+	if the noun is readied:
+		repeat with item running through things enclosed by the actor:
+			if the item is not the noun and the item is readied:
+				now the item is not readied.
+
+Report an actor readying (this is the standard report readying rule):
+	if the noun is readied:
+		say "[The actor] read[ies] [the noun].";
+	otherwise:
+		if the actor encloses the noun:
+			say "[The actor] fool[s] around with [the noun], but fail[s] to ready it.";
+		otherwise:
+			say "[The actor] attempt[s] to ready [the noun], but cannot get a hold on it.".
+
+
 
 Chapter - Attacking
 
@@ -306,7 +503,6 @@ Does the player mean attacking a dead person:
 Does the player mean attacking a person:
 	if the player opposes the noun:
 		it is very likely.
-[Does the player mean attacking a hostile alive person: it is likely.]
 
 A check attacking rule (this is the only attack persons rule):
 	if the noun is not a person:
@@ -338,26 +534,32 @@ A check attacking rule (this is the cannot attack as reaction rule):
 		take no time;
 		say "Attacking is an action, not a reaction." instead.
 
-Carry out an actor attacking when the fight consequences variable is false (this is the standard active attacking first phase rule):
-	if the combat state of the actor is at-Act:
-		now the global attacker is the actor;
-		now the global attacker weapon is a random readied weapon enclosed by the global attacker;
-		consider the attack move flavour rulebook;
-		choose a blank row in the Table of Stored Combat actions;
-		now the Combat Speed entry is 10;
-		now the Combat Action entry is the action of the actor attacking the noun;
-		now the combat state of the noun is at-React;
-		now the provoker of the noun is the actor;
-		now the provocation of the noun is the attacking action.
+Carry out an actor attacking when the actor is at-Act and running delayed actions is false (this is the standard active attacking first phase rule):
+	now the global attacker is the actor;
+	now the global attacker weapon is a random readied weapon enclosed by the global attacker;
+	consider the attack move flavour rulebook;
+	choose a blank row in the Table of Stored Combat actions;
+	now the Combat Speed entry is 10;
+	now the Combat Action entry is the action of the actor attacking the noun;
+	now the combat state of the noun is at-React;
+	[now the provoker of the noun is the actor;
+	now the provocation of the noun is the attacking action.]
 
-Carry out an actor attacking when the fight consequences variable is true (this is the standard attacking second phase rule):
-	if the actor is alive and the noun is alive, make the actor strike a blow against the noun.
+Carry out an actor attacking when running delayed actions is true (this is the standard attacking second phase rule):
+	if the actor is alive and the noun is alive:
+		carry out the striking a blow activity with the current action;
+
+The attack move flavour are a rulebook. [When someone attacks, before the other person reacts.]
+
+Last attack move flavour rule (this is the basic attack move flavour rule):
+	if the actor is not the player:
+		say "[The actor] lung[es] towards [the noun].[paragraph break]".
 
 
 
 Chapter - Concentrating
 
-Concentrating is an action applying to nothing. Understand "concentrate" and "c" as concentrating.
+Concentrating is an action applying to nothing. Understand "concentrate" and "c" and "co" as concentrating.
 
 A person has a number called concentration. The concentration of a person is usually 0.
 
@@ -374,54 +576,64 @@ Carry out an actor concentrating (this is the standard carry out concentrating r
 	if the concentration of the actor is greater than 3, now the concentration of the actor is 3.
 	
 Last report an actor concentrating (this is the standard concentrating prose rule):
-	if the concentration of the actor is 1, say "[The actor] concentrate[s], and [is-are] now mildly concentrated.";
-	if the concentration of the actor is 2, say "[The actor] concentrate[s], and [is-are] now quite concentrated.";
-	if the concentration of the actor is 3, say "[The actor] concentrate[s], and [is-are] now maximally concentrated.".
+	let C be the concentration of the actor;
+	say "[The actor] concentrate[s], and [is-are]";
+	if C is 1:
+		say " now mildly concentrated.";
+	if C is 2:
+		say " now quite concentrated.";
+	if C is 3:
+		say " now maximally concentrated.";
 
-An attack modifiers rule (this is the concentration attack modifier rule):
-	if the concentration of the global attacker is greater than 0 begin;
-		let the first dummy be 0;
-		if the concentration of the global attacker is 1, now the first dummy is 2;
-		if the concentration of the global attacker is 2, now the first dummy is 4;
-		if the concentration of the global attacker is 3, now the first dummy is 8;
-		if the numbers boolean is true, say " + ", the first dummy, " (concentration)[run paragraph on]";
-		increase the to-hit modifier by the first dummy;
-	end if.
+A calculating the attack roll rule (this is the concentration attack modifier rule):
+	let C be the concentration of the global attacker;
+	if C is greater than 0:
+		let the concentration bonus be 2;
+		if C is 2:
+			now the concentration bonus is 4;
+		if C is 3:
+			now the concentration bonus is 8;
+		if the numbers boolean is true:
+			say " + ", the concentration bonus, " (concentration)[run paragraph on]";
+		increase the roll by the concentration bonus;
 
-A damage modifiers rule (this is the concentration damage modifier rule):
-	if the concentration of the global attacker is greater than 1 begin;
-		let the first dummy be 0;
-		if the concentration of the global attacker is 2, now the first dummy is 2;
-		if the concentration of the global attacker is 3, now the first dummy is 4;
-		if the numbers boolean is true, say " + ", the first dummy, " (concentration)[run paragraph on]";
-		increase the damage modifier by the first dummy;
-	end if.
+Rule for dealing damage (this is the concentration damage modifier rule):
+	let C be the concentration of the global attacker;
+	if C > 1:
+		let the bonus be 2;
+		if the concentration of the global attacker is 3:
+			now the bonus is 4;
+		if the numbers boolean is true:
+			say " + ", the bonus, " (concentration)[run paragraph on]";
+		increase the damage by the bonus;
 
 An aftereffects rule (this is the lose concentration when hit rule):
-	if the final damage is greater than 0 and the global defender is alive, let the global defender lose concentration.
+	if the final damage is greater than 0 and the global defender is alive:
+		let the global defender lose concentration.
 
-A take away until attack circumstances rule (this is the lose concentration after attacking rule):
+A remove temporary circumstances rule (this is the lose concentration after attacking rule):
 	now the concentration of the global attacker is 0.
 
-[Losing concentration]
-The lose concentration prose rules are a rulebook.
-
-The concentration loser is a person that varies.
+[ Losing concentration ]
 
 To let (the defender - a person) lose concentration:
-	if the concentration of the defender is 0, continue the activity;
-	now the concentration of the defender is 0;
-	now the concentration loser is the defender;
-	consider the lose concentration prose rules.
-	
-Last lose concentration prose rule (this is the standard lose concentration prose rule):
-	if the concentration loser is the player, say " You lose your [bold type]concentration[roman type]![run paragraph on]";
-	if the concentration loser is not the player, say " [The concentration loser] loses [bold type]concentration[roman type]![run paragraph on]".
+	if the concentration of the defender > 0:
+		now the concentration of the defender is 0;
+		consider the lose concentration prose rules for the defender;
+
+The lose concentration prose rules are a person based rulebook.
+
+Last lose concentration prose rule for a person (called P) (this is the standard lose concentration prose rule):
+	say " [The P] lose[s] [bold type]concentration[roman type]![run paragraph on]";
 
 Chance to win rule (this is the CTW concentration bonus rule):
-	if the concentration of the global attacker is 1, increase the chance-to-win by 2;
-	if the concentration of the global attacker is 2, increase the chance-to-win by 4;
-	if the concentration of the global attacker is 3, increase the chance-to-win by 8.
+	let C be the concentration of the global attacker;
+	if C is 1:
+		increase the chance-to-win by 2;
+	if C is 2:
+		increase the chance-to-win by 4;
+	if C is 3:
+		increase the chance-to-win by 8;
 	
 Carry out an actor going (this is the lose concentration on going rule):
 	now the concentration of the actor is 0.
@@ -448,19 +660,21 @@ Carry out an actor parrying (this is the standard carry out parrying rule):
 Last report an actor parrying (this is the standard parry prose rule):	
 	say "[The actor] strike[s] up a defensive pose.".
 
-An attack modifiers rule (this is the parry defence bonus rule):
+A calculating the attack roll rule (this is the parry defence bonus rule):
 	if the global defender is at parry:
 		let n be the passive parry max of global attacker weapon;
-		if the active parry max of global defender weapon is less than n, now n is the active parry max of global defender weapon;
+		if the active parry max of global defender weapon is less than n:
+			now n is the active parry max of global defender weapon;
 		if the numbers boolean is true:
-			if n is greater than 0, say " - ", n, " (defender parrying)[run paragraph on]";
+			if n is greater than 0:
+				say " - ", n, " (defender parrying)[run paragraph on]";
 			if n is 0 and active parry max of global defender weapon is 0:
 				say " - 0 (cannot parry with [global defender weapon])[run paragraph on]";
 			otherwise:
 				if n is 0, say " - 0 (cannot parry against [global attacker weapon])[run paragraph on]";
-		decrease the to-hit modifier by n.
+		decrease the roll by n.
 
-A take away until attack circumstances rule (this is the no longer at parry after the attack rule):
+A remove temporary circumstances rule (this is the no longer at parry after the attack rule):
 	now the global defender is not at parry.
 
 Best defender's action rule (this is the CTW parry bonus rule):
@@ -490,17 +704,17 @@ Carry out an actor dodging (this is the standard carry out dodging rule):
 Last report an actor dodging (this is the standard dodge prose rule):
 	say "[The actor] get[s] ready for quick evasive maneuvers.".
 
-An attack modifiers rule (this is the dodge defence bonus rule):
-	if the global defender is at dodge begin;
+A calculating the attack roll rule (this is the dodge defence bonus rule):
+	if the global defender is at dodge:
 		let n be the dodgability of global attacker weapon;
-		if the numbers boolean is true begin;
-			if n is greater than 0, say " - ", n, " (defender dodging)[run paragraph on]";
-			if n is 0, say " - 0 (cannot dodge)[run paragraph on]";
-		end if;
-		decrease the to-hit modifier by n;
-	end if.
+		if the numbers boolean is true:
+			if n is greater than 0:
+				say " - ", n, " (defender dodging)[run paragraph on]";
+			if n is 0:
+				say " - 0 (cannot dodge)[run paragraph on]";
+		decrease the roll by n;
 
-A take away until attack circumstances rule (this is the no longer at dodge after the attack rule):
+A remove temporary circumstances rule (this is the no longer at dodge after the attack rule):
 	now the global defender is not at dodge.
 
 Best defender's action rule (this is the CTW dodge bonus rule):
@@ -767,140 +981,7 @@ Last standard AI action selection rule (this is the randomise the action result 
 
 
 
-Book - Weapons
-
-Chapter - The weapon kind
-
-[A readied weapon is one that is not just carried by the actor, but actually in use.]
-
-[The damage die is the die size used to calculate damage. Base damage dealt by the weapon is 1d(damage die) + weapon damage bonus. So a standard weapon deals 1d6 damage; a weapon with a damage die of 0 and a weapon damage bonus of 5 always deals 5 damage, and so on. Negative damage die is counted as 0, but negative weapon damage bonus is possible.]
-A weapon has a number called the damage die. The damage die of a weapon is usually 6.
-A weapon has a number called the weapon damage bonus. The weapon damage bonus of a weapon is usually 0.
-
-[The dodgability of a weapon is the bonus a defender gets against it when dodging.]
-A weapon has a number called the dodgability. The dodgability of a weapon is usually 2.
-
-[The passive parry max is the maximum bonus a defender can get when parrying AGAINST this weapon.]
-A weapon has a number called the passive parry max. The passive parry max is usually 2.
-
-[The active parry max is the maximum bonus a defender can get when parrying WITH this weapon.]
-A weapon has a number called the active parry max. The active parry max is usually 2.
-
-A weapon has a number called the weapon attack bonus. The weapon attack bonus of a weapon is usually 0.
-
-
-Section - Weapon attack bonus
-
-An attack modifiers rule (this is the attack bonus from weapon rule):
-	let item be a random readied weapon enclosed by the global attacker;
-	let n be the weapon attack bonus of item;
-	if the numbers boolean is true begin;
-		if n is greater than 0, say " + ", n, " ([item] bonus)[run paragraph on]";
-		if n is less than 0, say " - ", 0 minus n, " ([item] penalty)[run paragraph on]";
-	end if;
-	increase the to-hit modifier by n.
-
-Chance to win rule (this is the CTW attack bonus from weapon rule):
-	increase the chance-to-win by the weapon attack bonus of the chosen weapon.
-
-
-Chapter - The ready action
-
-Section - The action itself
-
-Readying is an action applying to one visible thing.
-
-Understand "ready [thing]" as readying. Understand "wield [thing]" and "use [weapon]" as readying.
-
-Does the player mean readying a readied weapon: it is unlikely.
-
-Check readying (this is the cannot ready what is already readied rule):
-	if the noun is readied and the noun is enclosed by the player:
-		take no time;
-		say "You are already wielding [the noun]." instead.
-
-Check readying (this is the cannot ready what is not a weapon rule):
-	if the noun is not a weapon:
-		take no time;
-		say "You can only ready weapons." instead.
-
-First carry out an actor readying (this is the implicit taking when readying rule):
-	if the actor does not enclose the noun:
-		try the actor taking the noun.
-
-Carry out an actor readying (this is the carry out readying when enclosing rule):
-	if the actor encloses the noun:
-		now the noun is readied.
-
-Last carry out an actor readying (this is the unready all other weapons rule):
-	if the noun is readied:
-		repeat with item running through things enclosed by the actor:
-			if the item is not the noun and the item is readied:
-				now the item is not readied.
-
-Report an actor readying (this is the standard report readying rule):
-	if the noun is readied:
-		say "[The actor] read[ies] [the noun].";
-	otherwise:
-		if the actor encloses the noun:
-			say "[The actor] fool[s] around with [the noun], but fail[s] to ready it.";
-		otherwise:
-			say "[The actor] attempt[s] to ready [the noun], but cannot get a hold on it.".
-
-
-After printing the name of a readied weapon while taking inventory (this is the readied inventory listing rule):
-	say " (readied)".
-
-After dropping a readied weapon (this is the unready on dropping rule):
-	now the noun is not readied; continue the action.
-
-After putting on a readied weapon (this is the unready on putting on rule):
-	now the noun is not readied; continue the action.
-
-After inserting into a readied weapon (this is the unready on inserting rule):
-	now the noun is not readied; continue the action.
-
-
-Section - Natural weapons
-
-A natural weapon is a kind of weapon.
-A natural weapon is part of every person.
-A natural weapon is usually privately-named.
-
-Instead of examining a natural weapon (this is the standard description of a natural weapon rule):
-	say "Clenched fists, kicking feet--that kind of stuff.".
-
-The damage die of a natural weapon is usually 3. The dodgability of a natural weapon is usually 2. The passive parry max of a natural weapon is usually 2. The active parry max of a natural weapon is usually 0.
-
-Does the player mean readying a natural weapon:
-	it is very unlikely.
-
-Section - Making sure a weapon is always readied
-
-To ready natural weapons: [run every combat round, just to be sure]
-	repeat with X running through all alive persons enclosed by the location:
-		if X encloses no readied weapon:
-			let item be a random natural weapon part of X;
-			now item is readied.	
-
-When play begins (this is the ready weapons for everyone rule):
-	repeat with X running through all alive persons:
-		if X encloses no readied weapon:
-			if X carries at least one weapon:
-				let item be a random weapon carried by X;
-				now item is readied;
-			otherwise:
-				let item be a random natural weapon part of X;
-				now item is readied.
-
-A starting the combat round rule (this is the ready natural weapons rule):
-	ready natural weapons.
-
-
-
-
 Volume - Plug-ins
-
 
 Chapter - Reloadable Weapons (Standard Plug-in)
 
@@ -934,7 +1015,6 @@ After printing the name of a weapon (called item) when taking inventory (this is
 				say " (no [shots text of item] left; [current load time of item] round[if current load time of item is not 1]s[otherwise] to [reload text of item])";
 			otherwise:
 				say " (no [shots text of item] left; cannot be [reload stem text of item]ed)".
-
 
 An aftereffects rule (this is the decrease ammo rule):
 	let item be a random readied weapon enclosed by the global attacker;
@@ -990,8 +1070,6 @@ Report an actor reloading (this is the standard report reloading rule):
 		say "[The actor] [if the current load time of the noun plus 1 is the maximum load time of the noun]start[s][otherwise]continue[s][end if] [reload stem text of the noun]ing [the noun].".
 
 
-	
-	
 
 Section - Reloading and choosing a weapon
 
@@ -1027,7 +1105,6 @@ Standard AI weapon selection rule for a weapon (called W) (this is the do not pr
 
 [Weapons with 0 ammo and a maximum load time of -1 should NOT be chosen.]
 
-
 [ We will only load an unloaded weapon. ]
 First standard AI action selection rule for a person (called P) when the chosen weapon is waiting to be reloaded (this is the consider reloading rule):
 	choose a blank Row in the Table of AI Combat Options;
@@ -1040,6 +1117,7 @@ A standard AI action selection rule for a person (called P) when the chosen weap
 		now the Action Weight entry is -1000;
 	choose row with an Option of the action of P concentrating in the Table of AI Combat Options;
 	now the Action Weight entry is -100;
+
 
 
 Chapter - Tension (Standard Plug-in)
@@ -1055,21 +1133,22 @@ Every turn (this is the standard increase or reset the tension rule):
 		now the tension is 0;
 	otherwise:
 		increase the tension by 1;
-	if the tension is greater than 20, now the tension is 20.
+		if the tension is greater than 20:
+			now the tension is 20.
 	
-An attack modifiers rule (this is the standard tension attack modifier rule):
-	let the first dummy be 0;
-	now the first dummy is the tension divided by 2;
-	if the first dummy is not 0:
-		if the numbers boolean is true, say " + ", the first dummy, " (tension)[run paragraph on]";
-		increase the to-hit modifier by the first dummy.
+A calculating the attack roll rule (this is the standard tension attack modifier rule):
+	let the tension bonus be the tension divided by 2;
+	if the tension bonus is not 0:
+		if the numbers boolean is true:
+			say " + ", the tension bonus, " (tension)[run paragraph on]";
+		increase the roll by the tension bonus;
 		
-A damage modifiers rule (this is the standard tension damage modifier rule):
-	let the first dummy be 0;
-	now the first dummy is the tension divided by 3;
-	if the first dummy is not 0:
-		if the numbers boolean is true, say " + ", the first dummy, " (tension)[run paragraph on]";
-		increase the damage modifier by the first dummy.
+A dealing damage rule (this is the standard tension damage modifier rule):
+	let the bonus be the tension divided by 3;
+	if the bonus is not 0:
+		if the numbers boolean is true:
+			say " + ", the bonus, " (tension)[run paragraph on]";
+		increase the damage by the bonus.
 
 An aftereffects rule (this is the standard reduce tension after hit rule):		
 	if the final damage is greater than 0:
@@ -1078,7 +1157,6 @@ An aftereffects rule (this is the standard reduce tension after hit rule):
 		now the tension is the tension divided by 10;
 		if the tension is less than 0, now the tension is 0.
 
-	
 [A hit must reduce the tension, but not necessarily completely down to 0. We want low tensions to be completely removed by a hit, but larger tension to be removed only partly. The standard rule leads to the following table:
 
 0 -> 0
@@ -1113,6 +1191,7 @@ Chance to win rule (this is the CTW tension bonus rule):
 A standard AI action selection rule for an at-Act person (called P) (this is the tension influences attacking rule):
 	choose row with an Option of the action of P attacking the chosen target in the Table of AI Combat Options;
 	increase the Action Weight entry by the tension divided by 4.
-	
+
+
 
 Inform ATTACK ends here.
