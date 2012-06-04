@@ -179,11 +179,6 @@ To decide which person is the next participant:
 [ Who the AI is currently targetting ]
 The chosen target is a person variable.
 
-[ Actions can wait for reactions by running in two stages:
-	1. First when running delayed actions is false. In this stage they should set the target's state to at-React, and add a stored action to the Table of Stored Combat Actions. The combat speed column is for the possibility of a fast reaction that should take place before the action does.
-	2. Second when running delayed actions is false is true. By this time the target has selected a reaction, and the action really occurs. ]
-Running delayed actions is a truth state that varies. Running delayed actions is false.
-
 Chapter - The combat round rules
 
 The combat round rules is a rulebook.
@@ -272,12 +267,10 @@ A combat round rule when the combat status is reactions (this is the AI chooses 
 	now the combat status is concluding;
 
 A combat round rule when the combat status is concluding (this is the run delayed actions rule):
-	now running delayed actions is true;
 	sort the Table of Stored Combat Actions in Combat Speed order;
 	repeat through the Table of Stored Combat Actions:
 		try the Combat Action entry;
 		blank out the whole row;
-	now running delayed actions is false;
 
 A combat round rule when the combat status is concluding (this is the conclude the combat round rule):
 	[ Reset everyone to Inactive so that they'll have the right state in the next turn whether it's peace or combat. ]

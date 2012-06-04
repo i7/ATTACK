@@ -42,6 +42,9 @@ Volume - The Main System
 
 Book - Dressing up the Person Class
 
+[ These adjectives will make reporting attacks a lot easier! ]
+Definition: a person is a pc rather than an npc if it is the player.
+
 Chapter - Looting
 
 [To make looting possible.]
@@ -192,9 +195,6 @@ After inserting into a readied weapon (this is the unready on inserting rule):
 
 Book - Combat Round
 
-[A person has a person called the provoker.
-A person has an action-name called the provocation.]
-
 Chapter - Setting up the Combat Order
 
 Section - Initiative
@@ -207,9 +207,7 @@ An aftereffects rule (this is the modify initiative based on combat results rule
 
 
 
-Book - Striking a Blow
-
-Chapter - Striking a blow
+Chapter - The hitting action
 
 The global attacker is a person variable.
 The global defender is a person variable.
@@ -219,55 +217,41 @@ The global defender weapon is a weapon variable.
 The attack roll is a number variable.
 The final damage is a number variable.
 
-[ The old system has been converted into an activity. Instead of the old entry point system we now have:
+[ The old system has been converted into an action. Instead of the old entry point system we now have:
 	1: does attacking begin?
-		add before striking a blow rules 
+		add check an actor hitting rules
 	2: preliminary results of attacking
-		add last before striking a blow rules
+		add first carry out an actor hitting rules
 	3-6: basic attack roll, apply the attack modifiers, calculate results of the attack roll, show results of the attack roll
 		these have been combined into the calculating the attack roll rules
 	7: did the attack hit?
-		unchanged
+		changed to a single carry out hitting rule
 	8: immediate results of hitting
-		unchanged
+		add rules after the standard whether the attack hit rule
 	9-12: rolling the die for damage, modifying the damage, calculating the final damage, showing the damage
 		these have been combined into the dealing damage rules
 	13: pre-prose-generation effects
-		unchanged
+		add after an actor hitting rules
 	14: reporting the results of the blow
-		unchanged
+		the flavour rules have been changed to report an actor hitting rules
 	15: aftereffects
 		unchanged
 	16: remove temporary circumstances
-		renamed to the remove temporary circumstances rules but otherwise unchanged
+		changed to after an actor hitting rules
 	17: final report
-		unchanged
+		changed to a final report an actor hitting rule
 ]
 
-Striking a blow something is an activity on a stored action.
-The striking a blow activity has a truth state called the blow proceeded.
+Hitting is an action applying to one visible thing.
 
-[ These rules are used to reset anything after an attack is made, regardless of what happens. ]
-The remove temporary circumstances rules is a rulebook.
-
-[ Set up the essential blow striking variables ]
-First before striking a blow [for] a stored action (called A) (this is the reset the striking a blow variables rule):
-	now the global attacker is the actor part of A;
-	now the global defender is the noun part of A;
+[ Reset the variables ]
+Setting action variables for hitting (this is the reset hitting variables rule):
+	now the global attacker is the actor;
+	now the global defender is the noun;
 	now the global attacker weapon is a random readied weapon enclosed by the global attacker;
 	now the global defender weapon is a random readied weapon enclosed by the global defender;
 	have the global attacker start pressing the global defender;
 	now the final damage is 0;
-
-Last before striking a blow (this is the blow was not averted rule):
-	now blow proceeded is true.
-
-For striking a blow when the blow proceeded is false (this is the stop the attack if it was averted rule):
-	consider the remove temporary circumstances rules;
-	rule fails;
-
-First after striking a blow when the blow proceeded is false (this is the no aftereffects if the attack was averted rule):
-	rule fails;
 
 
 
@@ -276,9 +260,8 @@ Section - Calculating the attack roll
 The calculating the attack roll rules are a rulebook producing a number.
 The calculating the attack roll rulebook have a number called the roll.
 
-Rule for striking a blow (this is the consider the calculating the attack roll rules rule):
+Carry out an actor hitting (this is the consider the calculating the attack roll rules rule):
 	now the attack roll is the number produced by the calculating the attack roll rules;
-	continue the activity.
 
 First calculating the attack roll rule (this is the standard attack roll rule):
 	now the roll is a random number between 1 and 10;
@@ -303,29 +286,16 @@ Last calculating the attack roll rule (this is the standard calculate results of
 
 
 
-Section - Whether the attack hits & the immediate results of hitting
+Section - Whether the attack hits
 
-The whether the attack hit rules is a rulebook.
-
-Rule for striking a blow (this is the abide by the whether the attack rules rule):
-	abide by the whether the attack hit rules;
-	continue the activity;
-
-Rule for whether the attack hit (this is the standard whether the attack hit rule):
+Carry out an actor hitting (this is the standard whether the attack hit rule):
 	if the attack roll is greater than the defence of the global defender:
 		if the numbers boolean is true:
 			say "[the global attacker] beat[s] [possessive of global defender] defence rating of ", the defence of the global defender, ".";
-		continue the activity;
 	otherwise:
 		if the numbers boolean is true:
 			say "[the global attacker] do[es] not overcome [possessive of global defender] defence rating of ", the defence of the global defender, "[roman type].";
 		rule fails;
-
-The immediate results of hitting rules is a rulebook.
-
-Rule for striking a blow (this is the abide by the immediate results of hitting rules rule):
-	abide by the immediate results of hitting rules;
-	continue the activity;
 
 
 
@@ -334,9 +304,8 @@ Section - Dealing damage
 The dealing damage rules are a rulebook producing a number.
 The dealing damage rulebook have a number called the damage.
 
-Rule for striking a blow (this is the consider the dealing damage rules rule):
+Carry out an actor hitting (this is the consider the dealing damage rules rule):
 	now the final damage is the number produced by the dealing damage rules;
-	continue the activity.
 
 First dealing damage rule (this is the standard damage roll rule):
 	unless damage die of the global attacker weapon is less than 1:
@@ -367,54 +336,27 @@ Last dealing damage rule (this is the standard show the damage dealt rule):
 Last dealing damage rule (this is the return the damage dealt rule):
 	rule succeeds with result the damage;
 
-
-
-Section - Aftereffects before flavour text
-
-The aftereffects before flavour text rules is a rulebook.
-
-After striking a blow (this is the consider the aftereffects before flavour text rules rule):
-	consider the aftereffects before flavour text rules;
-
-Aftereffects before flavour text (this is the subtract damage from health rule):
-	decrease the health of the global defender by the final damage.
+Carry out an actor hitting (this is the subtract damage from health rule):
+	decrease the health of the global defender by the final damage;
 
 
 
-Section - Flavour text rules
+Section - Report hitting
 
-The print flavour text rules is a rulebook.
-
-After striking a blow (this is the consider the print flavour text rules rule):
-	consider the print flavour text rules;
-
-The intervening flavour text are a rulebook. [Use this to intervene in the normal procedure.]
-The flavour are a rulebook. [In non-fatal cases]
-The fatal player flavour are a rulebook. [When the player is killed.]
-The fatal flavour are a rulebook. [When someone else is killed.]
-
-A print flavour text rule (this is the flavour text structure rule):
-	abide by the intervening flavour text rules;
-	if the global defender is alive:
-		consider the flavour rulebook;
-	otherwise:
-		if the global defender is the player:
-			consider the fatal player flavour rulebook;
-		otherwise:
-			consider the fatal flavour rulebook.
-
-Last flavour rule (this is the basic flavour rule):
+Report an actor hitting an alive person (this is the basic flavour rule):
 	if the final damage is greater than 0:
 		say "[The global attacker] hit[s] [the global defender].[run paragraph on]";
 	otherwise:
 		say "[The global attacker] miss[es] [the global defender].[run paragraph on]";
-	continue the action.
 
-Last fatal player flavour rule (this is the basic fatal player flavour rule):
-	say "You are killed by [the name of the global attacker].".
+Report an actor hitting a dead pc (this is the basic fatal player flavour rule):
+	say "You are killed by [the name of the global attacker].[run paragraph on]";
 
-Last fatal flavour rule (this is the basic fatal flavour rule):
-	say "[The global attacker] kill[s] [the name of the global defender].".
+Report an actor hitting a dead npc (this is the basic fatal flavour rule):
+	say "[The global attacker] kill[s] [the name of the global defender].[run paragraph on]";
+
+Last report an actor hitting (this is the end hitting with paragraph break rule):
+	say "[paragraph break]".
 
 
 
@@ -422,28 +364,13 @@ Section - Aftereffects
 
 The aftereffects rules is a rulebook.
 
-After striking a blow (this is the consider the aftereffects rules rule):
+Report an actor hitting (this is the consider the aftereffects rules rule):
 	if the player is alive:
 		consider the aftereffects rules;
 
 An aftereffects rule (this is the unready weapons of dead person rule):
 	if the global defender is dead:
 		now all readied weapons enclosed by the global defender are not readied;
-
-After striking a blow (this is the consider the remove temporary circumstances rules rule):
-	consider the remove temporary circumstances rules;
-
-
-
-Section - Final blow report
-
-The final blow report rules is a rulebook.
-
-After striking a blow (this is the consider the final blow report rules rule):
-	consider the final blow report rules;
-
-Last final blow report rule (this is the end reporting blow with paragraph break rule):
-	say "[paragraph break]".
 
 
 
@@ -510,7 +437,7 @@ A check attacking rule (this is the only attack persons rule):
 		say "Things are not your enemies." instead.
 
 A check attacking rule (this is the only attack the living rule):
-	if the noun is not alive:
+	if the noun is dead:
 		take no time;	
 		say "[The noun] is already dead." instead.
 
@@ -534,24 +461,15 @@ A check attacking rule (this is the cannot attack as reaction rule):
 		take no time;
 		say "Attacking is an action, not a reaction." instead.
 
-Carry out an actor attacking when the actor is at-Act and running delayed actions is false (this is the standard active attacking first phase rule):
+Carry out an actor attacking (this is the standard carry out an actor attacking rule):
 	now the global attacker is the actor;
 	now the global attacker weapon is a random readied weapon enclosed by the global attacker;
-	consider the attack move flavour rulebook;
 	choose a blank row in the Table of Stored Combat actions;
 	now the Combat Speed entry is 10;
-	now the Combat Action entry is the action of the actor attacking the noun;
+	now the Combat Action entry is the action of the actor hitting the noun;
 	now the combat state of the noun is at-React;
-	[now the provoker of the noun is the actor;
-	now the provocation of the noun is the attacking action.]
 
-Carry out an actor attacking when running delayed actions is true (this is the standard attacking second phase rule):
-	if the actor is alive and the noun is alive:
-		carry out the striking a blow activity with the current action;
-
-The attack move flavour are a rulebook. [When someone attacks, before the other person reacts.]
-
-Last attack move flavour rule (this is the basic attack move flavour rule):
+Report an actor attacking (this is the standard report an actor attacking rule):
 	if the actor is not the player:
 		say "[The actor] lung[es] towards [the noun].[paragraph break]".
 
@@ -611,8 +529,9 @@ An aftereffects rule (this is the lose concentration when hit rule):
 	if the final damage is greater than 0 and the global defender is alive:
 		let the global defender lose concentration.
 
-A remove temporary circumstances rule (this is the lose concentration after attacking rule):
-	now the concentration of the global attacker is 0.
+After an actor hitting (this is the lose concentration after attacking rule):
+	now the concentration of the global attacker is 0;
+	continue the action;
 
 [ Losing concentration ]
 
@@ -674,8 +593,9 @@ A calculating the attack roll rule (this is the parry defence bonus rule):
 				if n is 0, say " - 0 (cannot parry against [global attacker weapon])[run paragraph on]";
 		decrease the roll by n.
 
-A remove temporary circumstances rule (this is the no longer at parry after the attack rule):
-	now the global defender is not at parry.
+After an actor hitting (this is the no longer at parry after the attack rule):
+	now the global defender is not at parry;
+	continue the action;
 
 Best defender's action rule (this is the CTW parry bonus rule):
 	let n be the passive parry max of the chosen weapon;
@@ -714,8 +634,9 @@ A calculating the attack roll rule (this is the dodge defence bonus rule):
 				say " - 0 (cannot dodge)[run paragraph on]";
 		decrease the roll by n;
 
-A remove temporary circumstances rule (this is the no longer at dodge after the attack rule):
-	now the global defender is not at dodge.
+After an actor hitting (this is the no longer at dodge after the attack rule):
+	now the global defender is not at dodge;
+	continue the action;
 
 Best defender's action rule (this is the CTW dodge bonus rule):
 	let n be the dodgability of the chosen weapon;
