@@ -1,4 +1,4 @@
-Version 4/120603 of Inform ATTACK by Victor Gijsbers begins here.
+Version 4/120609 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -32,6 +32,15 @@ Carry out switching the numbers on (this is the standard switching the numbers o
 	now the numbers boolean is true;
 	say "You will now see combat-related numbers.".
 
+Section - The After reporting rules
+
+[ The reporting rules are supposed to have the last word, but in Inform ATTACK sometimes that's just not acceptable. The After reporting rules allow us to get another word in. Like the After rules, they are shared for all (non out of world) actions. ]
+The after reporting rules are a rulebook.
+
+A specific action-processing rule (this is the after reporting stage rule):
+	if action in world is true:
+		abide by the after reporting rules.
+
 
 
 Volume - The Main System
@@ -54,8 +63,8 @@ Check an actor taking (this is the can't take living people's possessions rule):
 	let the local ceiling be the common ancestor of the actor with the noun;
 	let H be the not-counting-parts holder of the noun;
 	while H is not nothing and H is not the local ceiling:
-		if H is an alive person, stop the action with library message taking action
-			number 6 for H;
+		if H is an alive person:
+			stop the action with library message taking action number 6 for H;
 		let H be the not-counting-parts holder of H;
 
 After examining a dead person (this is the give list of possession on dead person rule):
@@ -83,8 +92,10 @@ To fully heal (patient - a person):
 
 To heal (patient - a person) for (health - a number) health:
 	let the health dummy be the permanent health of the patient minus the health of the patient;
-	if health is less than the health dummy, now the health dummy is health;
-	if the health dummy is less than 0, now the health dummy is 0;
+	if health is less than the health dummy:
+		now the health dummy is health;
+	if the health dummy is less than 0:
+		now the health dummy is 0;
 	increase the health of the patient by the health dummy;
 	[now the healed amount is the health dummy.] [For storage.]
 
@@ -127,14 +138,14 @@ Section - Weapon attack bonus
 
 A weapon has a number called the weapon attack bonus. The weapon attack bonus of a weapon is usually 0.
 
-A calculating the attack roll rule (this is the attack bonus from weapon rule):
+An attack modifier rule (this is the weapon attack bonus rule):
 	let n be the weapon attack bonus of the global attacker weapon;
 	if the numbers boolean is true:
 		if n is greater than 0:
 			say " + ", n, " ([the global attacker weapon] bonus)[run paragraph on]";
 		if n is less than 0:
 			say " - ", 0 minus n, " ([the global attacker weapon] penalty)[run paragraph on]";
-	increase the roll by n.
+	increase the attack strength by n.
 
 Chance to win rule (this is the CTW attack bonus from weapon rule):
 	increase the chance-to-win by the weapon attack bonus of the chosen weapon.
@@ -145,13 +156,14 @@ A natural weapon is a kind of weapon.
 A natural weapon is part of every person.
 A natural weapon is usually privately-named.
 
-Instead of examining a natural weapon (this is the standard description of a natural weapon rule):
-	say "Clenched fists, kicking feet--that kind of stuff.".
+The description of a natural weapon is usually "Clenched fists, kicking feet--that kind of stuff."
 
 The damage die of a natural weapon is usually 3. The dodgability of a natural weapon is usually 2. The passive parry max of a natural weapon is usually 2. The active parry max of a natural weapon is usually 0.
 
 Does the player mean readying a natural weapon:
 	it is very unlikely.
+
+Definition: a weapon is artificial if it is not a natural weapon.
 
 Section - Making sure a weapon is always readied
 
@@ -193,19 +205,9 @@ After inserting into a readied weapon (this is the unready on inserting rule):
 
 
 
+
+
 Book - Combat Round
-
-Chapter - Setting up the Combat Order
-
-Section - Initiative
-
-An aftereffects rule (this is the modify initiative based on combat results rule):
-	if the final damage is greater than 0:
-		decrease the initiative of the global defender by 2;
-	otherwise:
-		decrease the initiative of the global attacker by 2;
-
-
 
 Chapter - The hitting action
 
@@ -214,8 +216,8 @@ The global defender is a person variable.
 The global attacker weapon is a weapon variable.
 The global defender weapon is a weapon variable.
 
-The attack roll is a number variable.
-The final damage is a number variable.
+The attack strength is a number variable.
+The attack damage is a number variable.
 
 [ The old system has been converted into an action. Instead of the old entry point system we now have:
 	1: does attacking begin?
@@ -223,13 +225,15 @@ The final damage is a number variable.
 	2: preliminary results of attacking
 		add first carry out an actor hitting rules
 	3-6: basic attack roll, apply the attack modifiers, calculate results of the attack roll, show results of the attack roll
-		these have been combined into the calculating the attack roll rules
+		these have been combined into the attack modifier rules
 	7: did the attack hit?
-		changed to a single carry out hitting rule
+		changed to first contact rules
 	8: immediate results of hitting
-		add rules after the standard whether the attack hit rule
-	9-12: rolling the die for damage, modifying the damage, calculating the final damage, showing the damage
-		these have been combined into the dealing damage rules
+		add contact rules
+	9-10: rolling the die for damage, modifying the damage
+		these have been combined into the damage modifier rules
+	11-12: calculating the final damage, showing the damage
+		these have been combined into the damage multiplier rules
 	13: pre-prose-generation effects
 		add after an actor hitting rules
 	14: reporting the results of the blow
@@ -239,57 +243,60 @@ The final damage is a number variable.
 	16: remove temporary circumstances
 		changed to after an actor hitting rules
 	17: final report
-		changed to a final report an actor hitting rule
+		Gone. Could add last aftereffects or last after reporting rules
 ]
 
 Hitting is an action applying to one visible thing.
+The specification of the hitting action is "When you attack Inform ATTACK must wait for a reaction from the target. In order to handle the resulting combat event the attacking action actually stores a new hitting action in the Table of Delayed Actions.".
 
 [ Reset the variables ]
 Setting action variables for hitting (this is the reset hitting variables rule):
 	now the global attacker is the actor;
 	now the global defender is the noun;
-	now the global attacker weapon is a random readied weapon enclosed by the global attacker;
-	now the global defender weapon is a random readied weapon enclosed by the global defender;
-	have the global attacker start pressing the global defender;
-	now the final damage is 0;
+	now the global attacker weapon is a random readied weapon enclosed by the actor;
+	now the global defender weapon is a random readied weapon enclosed by the noun;
+	have the actor start pressing the noun;
+	now the attack strength is 0;
+	now the attack damage is 0;
 
 
 
 Section - Calculating the attack roll
 
-The calculating the attack roll rules are a rulebook producing a number.
-The calculating the attack roll rulebook have a number called the roll.
+The attack modifier rules are a rulebook.
 
-Carry out an actor hitting (this is the consider the calculating the attack roll rules rule):
-	now the attack roll is the number produced by the calculating the attack roll rules;
+Carry out an actor hitting (this is the consider the attack modifier rules rule):
+	consider the attack modifier rules;
 
-First calculating the attack roll rule (this is the standard attack roll rule):
-	now the roll is a random number between 1 and 10;
+First attack modifier rule (this is the standard attack roll rule):
+	now the attack strength is a random number between 1 and 10;
 	if the numbers boolean is true:
-		say "[italic type]Rolling ", the roll, "[run paragraph on]".
+		say "[italic type]Rolling ", the attack strength, "[run paragraph on]".
 
-A calculating the attack roll rule (this is the melee attack bonus rule):
+An attack modifier rule (this is the melee attack bonus rule):
 	let the attacker's melee be the melee of the global attacker;
 	if the numbers boolean is true and the attacker's melee is not 0:
 		if the the attacker's melee is greater than 0:
 			say " + ", the attacker's melee, " (inherent bonus)[run paragraph on]";
 		otherwise:
 			say " - ", 0 minus the attacker's melee, " (inherent penalty)[run paragraph on]";
-	increase the roll by the attacker's melee;
+	increase the attack strength by the attacker's melee;
 
-Last calculating the attack roll rule (this is the standard show results of the attack roll rule):
+Last attack modifier rule (this is the standard show results of the attack roll rule):
 	if the numbers boolean is true:
-		say " = ", the roll, ", [run paragraph on]";
-
-Last calculating the attack roll rule (this is the standard calculate results of the attack roll rule):
-	rule succeeds with result the roll;
+		say " = ", the attack strength, ", [run paragraph on]";
 
 
 
 Section - Whether the attack hits
 
-Carry out an actor hitting (this is the standard whether the attack hit rule):
-	if the attack roll is greater than the defence of the global defender:
+The contact rules are a rulebook.
+
+Carry out an actor hitting (this is the abide by the contact rules rule):
+	abide by the contact rules.
+
+First contact rule (this is the standard whether the attack hit rule):
+	if the attack strength is greater than the defence of the global defender:
 		if the numbers boolean is true:
 			say "[the global attacker] beat[s] [possessive of global defender] defence rating of ", the defence of the global defender, ".";
 	otherwise:
@@ -301,62 +308,59 @@ Carry out an actor hitting (this is the standard whether the attack hit rule):
 
 Section - Dealing damage
 
-The dealing damage rules are a rulebook producing a number.
-The dealing damage rulebook have a number called the damage.
+The damage modifier rules are a rulebook.
+The damage multiplier rules are a rulebook.
 
-Carry out an actor hitting (this is the consider the dealing damage rules rule):
-	now the final damage is the number produced by the dealing damage rules;
+Carry out an actor hitting (this is the consider the damage modifier rules rule):
+	consider the damage modifier rules;
 
-First dealing damage rule (this is the standard damage roll rule):
+First damage modifier rule (this is the standard damage roll rule):
 	unless damage die of the global attacker weapon is less than 1:
-		now the damage is a random number between 1 and the damage die of the global attacker weapon;
-	increase the damage by weapon damage bonus of the global attacker weapon; [1d(damage die) + WDB]
+		now the attack damage is a random number between 1 and the damage die of the global attacker weapon;
+	increase the attack damage by weapon damage bonus of the global attacker weapon; [1d(damage die) + WDB]
 	if the numbers boolean is true:
-		say "[The global attacker] deal[s] ", the damage, "[run paragraph on]".
+		say "[The global attacker] deal[s] ", the attack damage, "[run paragraph on]".
 
-Last dealing damage rule (this is the can't deal negative damage rule):
-	if the damage is less than 0:
-		now the damage is 0;
+Carry out an actor hitting (this is the consider the damage multiplier rules rule):
+	consider the damage multiplier rules;
 
-Last dealing damage rule (this is the standard show the damage dealt rule):
+Last damage multiplier rule (this is the can't deal negative damage rule):
+	if the attack damage is less than 0:
+		now the attack damage is 0;
+
+Last damage multiplier rule (this is the standard show the attack damage dealt rule):
 	if the numbers boolean is true:
-		say " = [bold type]", the damage, " damage[roman type][italic type], ";
+		say " = [bold type]", the attack damage, " damage[roman type][italic type], ";
 		[no damage]
-		if the the damage is less than 1:
+		if the the attack damage is less than 1:
 			say "allowing [the global defender] to escape unscathed.[run paragraph on]";
 		otherwise:
 			[non-fatal]
-			if the the damage is less than the health of the global defender:
-				say "wounding [the global defender] to ", health of the global defender minus the damage, " health.[run paragraph on]" ;
+			if the the attack damage is less than the health of the global defender:
+				say "wounding [the global defender] to ", health of the global defender minus the attack damage, " health.[run paragraph on]" ;
 			[fatal]
 			otherwise:
 				say "killing [the name of the global defender].[run paragraph on]";
 		say "[roman type][paragraph break]";
 
-Last dealing damage rule (this is the return the damage dealt rule):
-	rule succeeds with result the damage;
-
 Carry out an actor hitting (this is the subtract damage from health rule):
-	decrease the health of the global defender by the final damage;
+	decrease the health of the global defender by the attack damage;
 
 
 
 Section - Report hitting
 
 Report an actor hitting an alive person (this is the basic flavour rule):
-	if the final damage is greater than 0:
+	if the attack damage is greater than 0:
 		say "[The global attacker] hit[s] [the global defender].[run paragraph on]";
 	otherwise:
 		say "[The global attacker] miss[es] [the global defender].[run paragraph on]";
 
 Report an actor hitting a dead pc (this is the basic fatal player flavour rule):
-	say "You are killed by [the name of the global attacker].[run paragraph on]";
+	say "You are killed by [the global attacker].[run paragraph on]";
 
 Report an actor hitting a dead npc (this is the basic fatal flavour rule):
 	say "[The global attacker] kill[s] [the name of the global defender].[run paragraph on]";
-
-Last report an actor hitting (this is the end hitting with paragraph break rule):
-	say "[paragraph break]".
 
 
 
@@ -364,13 +368,21 @@ Section - Aftereffects
 
 The aftereffects rules is a rulebook.
 
-Report an actor hitting (this is the consider the aftereffects rules rule):
+[ We need to run the aftereffects after the report rules, but the normal Inform action processing system doesn't give us any place to do that! But we can add a rule to the specific action-processing rules which will do the job. ]
+After reporting an actor hitting (this is the consider the aftereffects rules rule):
 	if the player is alive:
 		consider the aftereffects rules;
 
-An aftereffects rule (this is the unready weapons of dead person rule):
-	if the global defender is dead:
-		now all readied weapons enclosed by the global defender are not readied;
+An aftereffects rule when the global defender is dead (this is the unready weapons of dead person rule):
+	now all readied weapons enclosed by the global defender are not readied;
+
+An aftereffects rule (this is the modify initiative based on combat results rule):
+	if the attack damage is greater than 0:
+		decrease the initiative of the global defender by 2;
+	otherwise:
+		decrease the initiative of the global attacker by 2;
+
+
 
 
 
@@ -408,7 +420,7 @@ Last carry out an actor readying (this is the unready all other weapons rule):
 			if the item is not the noun and the item is readied:
 				now the item is not readied.
 
-Report an actor readying (this is the standard report readying rule):
+Last report an actor readying (this is the standard report readying rule):
 	if the noun is readied:
 		say "[The actor] read[ies] [the noun].";
 	otherwise:
@@ -427,24 +439,20 @@ Understand "a [thing]" as attacking.
 
 Does the player mean attacking a dead person:
 	it is unlikely.
-Does the player mean attacking a person:
-	if the player opposes the noun:
-		it is very likely.
+Does the player mean attacking a person opposed by the player:
+	it is very likely.
 
-A check attacking rule (this is the only attack persons rule):
-	if the noun is not a person:
-		take no time;
-		say "Things are not your enemies." instead.
+Check attacking when the noun is not a person (this is the only attack persons rule):
+	take no time;
+	say "Things are not your enemies." instead.
 
-A check attacking rule (this is the only attack the living rule):
-	if the noun is dead:
-		take no time;	
-		say "[The noun] is already dead." instead.
+Check attacking a dead person (this is the only attack the living rule):
+	take no time;	
+	say "[The noun] is already dead." instead.
 
-A check attacking rule (this is the do not kill yourself rule):
-	if the noun is the player:
-		take no time;
-		say "You are not that desperate!" instead.
+Check attacking the player (this is the do not kill yourself rule):
+	take no time;
+	say "You are not that desperate!" instead.
 
 A check attacking rule (this is the do not attack friendly people rule):
 	if the faction of the player is the faction of the noun:
@@ -456,22 +464,18 @@ A check attacking rule (this is the do not attack neutral people rule):
 		take no time;
 		say "[The noun] is not your enemy." instead.
 
-A check attacking rule (this is the cannot attack as reaction rule):
-	if the combat state of the player is at-React:
-		take no time;
-		say "Attacking is an action, not a reaction." instead.
+Check attacking rule when the player is at-React (this is the cannot attack as reaction rule):
+	take no time;
+	say "Attacking is an action, not a reaction." instead.
 
 Carry out an actor attacking (this is the standard carry out an actor attacking rule):
-	now the global attacker is the actor;
-	now the global attacker weapon is a random readied weapon enclosed by the global attacker;
-	choose a blank row in the Table of Stored Combat actions;
-	now the Combat Speed entry is 10;
-	now the Combat Action entry is the action of the actor hitting the noun;
+	choose a blank row in the Table of Delayed Actions;
+	now the Action speed entry is 10;
+	now the Action entry is the action of the actor hitting the noun;
 	now the combat state of the noun is at-React;
 
-Report an actor attacking (this is the standard report an actor attacking rule):
-	if the actor is not the player:
-		say "[The actor] lung[es] towards [the noun].[paragraph break]".
+Report an npc attacking (this is the standard report an actor attacking rule):
+	say "[The actor] lung[es] towards [the noun].[paragraph break]".
 
 
 
@@ -481,52 +485,58 @@ Concentrating is an action applying to nothing. Understand "concentrate" and "c"
 
 A person has a number called concentration. The concentration of a person is usually 0.
 
-Check concentrating (this is the do not concentrate when at maximum rule):
-	if the concentration of the player is 3:
-		take no time;
-		say "You are already maximally concentrated." instead.
+Check concentrating when the concentration of the player is 3 (this is the do not concentrate when at maximum rule):
+	take no time;
+	say "You are already maximally concentrated." instead;
 
 First carry out an actor concentrating (this is the standard concentrating improves initiative rule):
 	increase the initiative of the actor by the concentration of the actor.
 		
 Carry out an actor concentrating (this is the standard carry out concentrating rule):	
 	increase the concentration of the actor by 1;
-	if the concentration of the actor is greater than 3, now the concentration of the actor is 3.
+	if the concentration of the actor is greater than 3:
+		now the concentration of the actor is 3;
 	
-Last report an actor concentrating (this is the standard concentrating prose rule):
-	let C be the concentration of the actor;
+Report an actor concentrating (this is the standard concentrating prose rule):
 	say "[The actor] concentrate[s], and [is-are]";
-	if C is 1:
-		say " now mildly concentrated.";
-	if C is 2:
-		say " now quite concentrated.";
-	if C is 3:
-		say " now maximally concentrated.";
+	if the concentration of the actor is:
+		-- 1:
+			say " now mildly concentrated.";
+		-- 2:
+			say " now quite concentrated.";
+		-- 3:
+			say " now maximally concentrated.";
 
-A calculating the attack roll rule (this is the concentration attack modifier rule):
-	let C be the concentration of the global attacker;
-	if C is greater than 0:
-		let the concentration bonus be 2;
-		if C is 2:
-			now the concentration bonus is 4;
-		if C is 3:
-			now the concentration bonus is 8;
-		if the numbers boolean is true:
-			say " + ", the concentration bonus, " (concentration)[run paragraph on]";
-		increase the roll by the concentration bonus;
-
-Rule for dealing damage (this is the concentration damage modifier rule):
-	let C be the concentration of the global attacker;
-	if C > 1:
-		let the bonus be 2;
-		if the concentration of the global attacker is 3:
+An attack modifier rule (this is the concentration attack modifier rule):
+	let the bonus be 0;
+	if the concentration of the actor is:
+		-- 0:
+			make no decision;
+		-- 1:
+			now the bonus is 2;
+		-- 2:
 			now the bonus is 4;
-		if the numbers boolean is true:
-			say " + ", the bonus, " (concentration)[run paragraph on]";
-		increase the damage by the bonus;
+		-- 3:
+			now the bonus is 8;
+	if the numbers boolean is true:
+		say " + ", the bonus, " (concentration)[run paragraph on]";
+	increase the attack strength by the bonus;
+
+Rule for damage modifier (this is the concentration damage modifier rule):
+	let the bonus be 0;
+	if the concentration of the actor is:
+		-- 2:
+			now the bonus is 2;
+		-- 3:
+			now the bonus is 4;
+		-- otherwise:
+			make no decision;
+	if the numbers boolean is true:
+		say " + ", the bonus, " (concentration)[run paragraph on]";
+	increase the attack damage by the bonus;
 
 An aftereffects rule (this is the lose concentration when hit rule):
-	if the final damage is greater than 0 and the global defender is alive:
+	if the attack damage is greater than 0 and the global defender is alive:
 		let the global defender lose concentration.
 
 After an actor hitting (this is the lose concentration after attacking rule):
@@ -540,19 +550,20 @@ To let (the defender - a person) lose concentration:
 		now the concentration of the defender is 0;
 		consider the lose concentration prose rules for the defender;
 
+[ The lose concentration prose rules will run as an aftereffect, and so should begin with a space ]
 The lose concentration prose rules are a person based rulebook.
 
 Last lose concentration prose rule for a person (called P) (this is the standard lose concentration prose rule):
 	say " [The P] lose[s] [bold type]concentration[roman type]![run paragraph on]";
 
 Chance to win rule (this is the CTW concentration bonus rule):
-	let C be the concentration of the global attacker;
-	if C is 1:
-		increase the chance-to-win by 2;
-	if C is 2:
-		increase the chance-to-win by 4;
-	if C is 3:
-		increase the chance-to-win by 8;
+	if the concentration of the running AI is:
+		-- 1:
+			increase the chance-to-win by 2;
+		-- 2:
+			increase the chance-to-win by 4;
+		-- 3:
+			increase the chance-to-win by 8;
 	
 Carry out an actor going (this is the lose concentration on going rule):
 	now the concentration of the actor is 0.
@@ -576,28 +587,27 @@ Carry out an actor parrying (this is the parrying changes initiative rule):
 Carry out an actor parrying (this is the standard carry out parrying rule):	
 	now the actor is at parry.
 	
-Last report an actor parrying (this is the standard parry prose rule):	
+Report an actor parrying (this is the standard parry prose rule):	
 	say "[The actor] strike[s] up a defensive pose.".
 
-A calculating the attack roll rule (this is the parry defence bonus rule):
-	if the global defender is at parry:
-		let n be the passive parry max of global attacker weapon;
-		if the active parry max of global defender weapon is less than n:
-			now n is the active parry max of global defender weapon;
-		if the numbers boolean is true:
-			if n is greater than 0:
-				say " - ", n, " (defender parrying)[run paragraph on]";
-			if n is 0 and active parry max of global defender weapon is 0:
-				say " - 0 (cannot parry with [global defender weapon])[run paragraph on]";
-			otherwise:
-				if n is 0, say " - 0 (cannot parry against [global attacker weapon])[run paragraph on]";
-		decrease the roll by n.
+An attack modifier rule when the global defender is at parry (this is the parry defence bonus rule):
+	let n be the passive parry max of global attacker weapon;
+	if the active parry max of global defender weapon is less than n:
+		now n is the active parry max of global defender weapon;
+	if the numbers boolean is true:
+		if n is greater than 0:
+			say " - ", n, " (defender parrying)[run paragraph on]";
+		if n is 0 and active parry max of global defender weapon is 0:
+			say " - 0 (cannot parry with [global defender weapon])[run paragraph on]";
+		otherwise:
+			if n is 0, say " - 0 (cannot parry against [global attacker weapon])[run paragraph on]";
+	decrease the attack strength by n;
 
 After an actor hitting (this is the no longer at parry after the attack rule):
 	now the global defender is not at parry;
 	continue the action;
 
-Best defender's action rule (this is the CTW parry bonus rule):
+Chance to win rule (this is the CTW parry bonus rule):
 	let n be the passive parry max of the chosen weapon;
 	let item be a random readied weapon enclosed by the chosen target;
 	if the active parry max of item is less than n:
@@ -621,27 +631,28 @@ Check dodging (this is the cannot dodge when not reacting rule):
 Carry out an actor dodging (this is the standard carry out dodging rule):	
 	now the actor is at dodge.
 	
-Last report an actor dodging (this is the standard dodge prose rule):
+Report an actor dodging (this is the standard dodge prose rule):
 	say "[The actor] get[s] ready for quick evasive maneuvers.".
 
-A calculating the attack roll rule (this is the dodge defence bonus rule):
-	if the global defender is at dodge:
-		let n be the dodgability of global attacker weapon;
-		if the numbers boolean is true:
-			if n is greater than 0:
-				say " - ", n, " (defender dodging)[run paragraph on]";
-			if n is 0:
-				say " - 0 (cannot dodge)[run paragraph on]";
-		decrease the roll by n;
+An attack modifier rule when the global defender is at dodge (this is the dodge defence bonus rule):
+	let n be the dodgability of global attacker weapon;
+	if the numbers boolean is true:
+		if n is greater than 0:
+			say " - ", n, " (defender dodging)[run paragraph on]";
+		if n is 0:
+			say " - 0 (cannot dodge)[run paragraph on]";
+	decrease the attack strength by n;
 
 After an actor hitting (this is the no longer at dodge after the attack rule):
 	now the global defender is not at dodge;
 	continue the action;
 
-Best defender's action rule (this is the CTW dodge bonus rule):
+Chance to win rule (this is the CTW dodge bonus rule):
 	let n be the dodgability of the chosen weapon;
 	if the best defence is less than n:
 		now the best defence is n.
+
+
 
 
 
@@ -658,23 +669,23 @@ Inform ATTACK Core has the base rules - we now add combat specific ones. ]
 
 Section - Target selection rules
 
-A standard AI target selection rule for a person (called target) (this is the prefer the severely wounded rule):
+An AI target selection rule for a person (called target) (this is the prefer the severely wounded rule):
 	if the health of the target times 2 is less than the permanent health of the target:
 		increase the Weight by 2;
 	if the health of the target times 4 is less than the permanent health of the target:
 		increase the Weight by 5;
 
-A standard AI target selection rule for a person (called target) (this is the prefer concentrated people rule):
+An AI target selection rule for a person (called target) (this is the prefer concentrated people rule):
 	increase the Weight by the concentration of the target;
 	if the concentration of the target is 3:
 		increase the Weight by 2;
 
-A standard AI target selection rule for a person (called target) (this is the prefer those with good weapons rule):
+An AI target selection rule for a person (called target) (this is the prefer those with good weapons rule):
 	let item be a random readied weapon enclosed by the target;
 	increase the Weight by the damage die of the item divided by 2;
 
-A standard AI target selection rule for a person (called target) (this is the do not prefer good parriers rule):
-	let item be a random readied weapon enclosed by the main actor;
+An AI target selection rule for a person (called target) (this is the do not prefer good parriers rule):
+	let item be a random readied weapon enclosed by the running AI;
 	let item2 be a random readied weapon enclosed by the target;
 	let n be the passive parry max of item;
 	if the active parry max of item2 is less than n:
@@ -687,184 +698,172 @@ A standard AI target selection rule for a person (called target) (this is the do
 
 [The following rule makes the actor prefer people with low defence, unless he is concentrated, in which case he prefers people with high defence. Reason: if you managed to become concentrated, you should use that bonus against otherwise tough opponents.]
 
-A standard AI target selection rule for a person (called target) (this is the do not prefer high defence unless concentrated rule):
-	let n be the defence of the target minus the melee of the main actor;
+An AI target selection rule for a person (called target) (this is the do not prefer high defence unless concentrated rule):
+	let n be the defence of the target minus the melee of the running AI;
 	if n is less than 0:
 		now n is 0;
-	let m be the concentration of main actor minus 1;
+	let m be the concentration of running AI minus 1;
 	[Negative if concentration = 0; 0 is concentration is 1; positive if concentration is 2 or 3.]
 	increase the Weight by n times m;
 
 
 
-Chapter - Second Stage - Choosing a Weapon
+Section - Selecting a weapon
 
-Table of AI Combat Weapon Options
+Table of AI Weapon Options
 Weapon	Weapon weight
 a weapon	a number
 with 50 blank rows
 
-The standard AI weapon selection rules are a weapon based rulebook producing a number.
-The standard AI weapon selection rulebook has a number called the Weight.
+The AI weapon selection rules are a weapon based rulebook producing a number.
+The AI weapon selection rulebook has a number called the Weight.
 
 The chosen weapon is a weapon variable.
 
 A Standard AI rule for a person (called P) (this is the select a weapon rule):
+	[ Only the natural weapon ]
 	if exactly one weapon is enclosed by P:
-		now the chosen weapon is a random weapon enclosed by the global attacker;
+		now the chosen weapon is a random weapon enclosed by P;
+	[ If there is one non-natural weapon choose it ]
+	otherwise if exactly two weapons are enclosed by P:
+		now the chosen weapon is a random artificial weapon enclosed by P;
 	otherwise:
-		blank out the whole of the Table of AI Combat Weapon Options;
+		blank out the whole of the Table of AI Weapon Options;
 		repeat with X running through all weapons enclosed by the P:
-			let weight be the number produced by the standard AI weapon selection rules for X;
-			choose a blank Row in the Table of AI Combat Weapon Options;
+			let weight be the number produced by the AI weapon selection rules for X;
+			choose a blank Row in the Table of AI Weapon Options;
 			now the Weapon entry is X;
 			now the Weapon weight entry is weight;
-		sort the Table of AI Combat Weapon Options in random order;
-		sort the Table of AI Combat Weapon Options in reverse Weapon weight order;
-		choose row 1 in the Table of AI Combat Weapon Options;
+		sort the Table of AI Weapon Options in random order;
+		sort the Table of AI Weapon Options in reverse Weapon weight order;
+		#if debug and showing weightings;
+		repeat through Table of AI Weapon Options:
+			say "[Weapon weight entry]: [Weapon entry][line break]";
+		#endif debug and showing weightings;
+		choose row 1 in the Table of AI Weapon Options;
 		now the chosen weapon is the Weapon entry;
 
-Section - Standard rules
+Section - Standard weapon selection rules
 
-[ These rules are dependent on the W, and not whether they are being run for the attacker or the defender. It should be possible to determine who that is by checking who holds the weapon. ]
+[ These rules are dependent on the W, and not whether they are being run for the attacker or the defender. Use the running AI variable if you need to know whose weapon it is. ]
 
-A standard AI weapon selection rule for a weapon (called W) (this is the prefer lots of damage rule):
+An AI weapon selection rule for a weapon (called W) (this is the prefer lots of damage rule):
 	increase the Weight by the damage die of W;
 
-A standard AI weapon selection rule for a weapon (called W) (this is the prefer low dodgability and passive parry rule):
+An AI weapon selection rule for a weapon (called W) (this is the prefer low dodgability and passive parry rule):
 	let n be the dodgability of the W;
 	if the passive parry max of the W is greater than n:
 		now n is the passive parry max of the W;
 	decrease the Weight by n;
 
-A standard AI weapon selection rule for a weapon (called W) (this is the prefer good active parry rule):
+An AI weapon selection rule for a weapon (called W) (this is the prefer good active parry rule):
 	increase the Weight by the active parry max of the W divided by 2;
 
-A standard AI weapon selection rule for a weapon (called W) (this is the prefer good attack bonus rule):
+An AI weapon selection rule for a weapon (called W) (this is the prefer good attack bonus rule):
 	let n be the weapon attack bonus of the W times three;
 	now n is (n + 1) divided by 2;
 	increase the Weight by n.
 
-[A standard AI weapon select rule (this is the prefer readied weapon rule):
-	choose row stored_row in Table of AI Combat Weapon Options;
-	if the Weapon Option entry is readied:
-		if the combat state of the actor is at-Act:
-			increase the Target weight entry by 3;
-		if the combat state of the actor is at-React:
-			increase the Target weight entry by 3.]
+[An AI weapon selection rule for a readied weapon (called W) (this is the prefer readied weapon rule):
+	increase the Weight entry by 3;]
 
-[ ??? Neither of these rules actually care who the weapon belongs to... is that the intended behaviour? Should we combine these rules together to a prefer readied weapon if the end is near rule? ]
-A standard AI weapon selection rule for a weapon (called W) (this is the prefer readied weapon if attacker almost dead rule):
-	if four times the health of the main actor is less than the permanent health of the main actor:
-		if W is readied:
-			increase the Weight by 2;
+[ If you're almost dead then don't change weapons. TODO: is this bonus too much? ]
+An AI weapon selection rule for a readied weapon (called W) (this is the prefer readied weapon if the end is near rule):
+	if four times the health of the running AI is less than the permanent health of the running AI:
+		increase the Weight by 4;
 
-A standard AI weapon selection rule for a weapon (called W) (this is the prefer readied weapon if defender almost dead rule):
-	if four times the health of the chosen target is less than the permanent health of the chosen target:
-		if W is readied:
-			increase the Weight by 2;
+[An AI weapon selection rule (this is the randomise the weapon result rule):
+	increase the Weight by a random number between 0 and 2.]
 
-[A standard AI weapon selection rule (this is the randomise the weapon result rule):
-	increase the Weight entry by a random number between 0 and 2.]
-
-A last standard AI weapon selection rule (this is the return the weapon weight rule):
+An AI weapon selection rule (this is the return the weapon weight rule):
 	rule succeeds with result Weight;
+
+
 
 Section - Action selection rules
 
 [For every possible action, there MUST be a "first" rule adding it to the table.]
 
-First standard AI action selection rule for an at-Act person (called P) (this is the consider attacking rule):
-	choose a blank Row in the Table of AI Combat Options;
+First AI action selection rule for an at-Act person (called P) (this is the consider attacking rule):
+	choose a blank Row in the Table of AI Action Options;
 	now the Option entry is the action of P attacking the chosen target;
 	now the Action Weight entry is 5;
 
-First standard AI action selection rule for a person (called P) (this is the consider concentrating rule):
-	choose a blank Row in the Table of AI Combat Options;
+First AI action selection rule for a person (called P) (this is the consider concentrating rule):
+	choose a blank Row in the Table of AI Action Options;
 	now the Option entry is the action of P concentrating;
 	now the Action Weight entry is 3;
 
-First standard AI action selection rule for an at-React person (called P) (this is the consider dodging rule):
-	choose a blank Row in the Table of AI Combat Options;
+First AI action selection rule for an at-React person (called P) (this is the consider dodging rule):
+	choose a blank Row in the Table of AI Action Options;
 	now the Option entry is the action of P dodging;
 	now the Action Weight entry is 5;
 
-First standard AI action selection rule for an at-React person (called P) (this is the consider parrying rule):
-	choose a blank Row in the Table of AI Combat Options;
+First AI action selection rule for an at-React person (called P) (this is the consider parrying rule):
+	choose a blank Row in the Table of AI Action Options;
 	now the Option entry is the action of P parrying;
 	now the Action Weight entry is 5;
 
-First standard AI action selection rule for a person (called P) when the chosen weapon is not readied (this is the consider readying rule):
-	choose a blank Row in the Table of AI Combat Options;
+First AI action selection rule for a person (called P) when the chosen weapon is not readied (this is the consider readying rule):
+	choose a blank Row in the Table of AI Action Options;
 	now the Option entry is the action of P readying the chosen weapon;
 	now the Action Weight entry is 5;
 
-[First standard AI action select rule (this is the consider waiting rule):
-	choose a blank Row in the Table of AI Combat Options;
-	change the Option entry to the action of the global attacker waiting;
-	change the Target weight entry to -20.]
-
-
 Section - Calculating the chance to win
 
-The chance to win rules is a rulebook.
+The chance to win rules is a rulebook producing a number.
+The chance to win rulebook have a number called the chance-to-win.
+The chance to win rulebook have a number called the best defence.
 
-The chance-to-win is a number that varies. The normalised chance-to-win is a number that varies.
+The AI action selection rulebook have a number called the chance-to-win.
+The AI action selection rulebook have a number called the normalised chance-to-win.
 
-First standard AI action selection rule (this is the calculate the chance to win rule):
-	consider the chance to win rules.
+First AI action selection rule (this is the calculate the chance to win rule):
+	now the chance-to-win is the number produced by the chance to win rules;
+	now the normalised chance-to-win is the chance-to-win;
+	if the normalised chance-to-win is greater than 10:
+		now the normalised chance-to-win is 10;
+	if the normalised chance-to-win is less than 0:
+		now the normalised chance-to-win is 0;
 
 First chance to win rule (this is the CTW default rule):
 	now the chance-to-win is 10.
 
 Chance to win rule (this is the CTW melee bonus rule):
-	increase the chance-to-win by the melee of the main actor;
+	increase the chance-to-win by the melee of the running AI;
 
 Chance to win rule (this is the CTW defence bonus rule):
-	decrease the chance-to-win by the defence of the main actor;
+	decrease the chance-to-win by the defence of the running AI;
 	
-[Other rules are in the appropriate sections.]	
+[Other rules are in the appropriate sections.]
 
-[Now we are going to calculate what the best defensive action of the global defender is, and we will use that to calculate the chance to win.]
-
-The best defender's action rules are a rulebook.
-
-The best defence is a number that varies. The best defence is usually 0.
-	
-Chance to win rule (this is the consider best defender's action rule):
-	now the best defence is 0;
-	consider the best defender's action rules;
-	decrease the chance-to-win by the best defence.
-
-
-Last chance to win rule (this is the normalised CTW rule):
-	now the normalised chance-to-win is the chance-to-win;
-	if the normalised chance-to-win is greater than 10, now the normalised chance-to-win is 10;
-	if the normalised chance-to-win is less than 0, now the normalised chance-to-win is 0.
+Last chance to win rule (this is the account for the best defence and return the CTW rule):
+	decrease the chance-to-win by the best defence;
+	rule succeeds with result the chance-to-win;
 
 Section - More action selection rules
 
-A standard AI action selection rule for an at-Act person (called P) (this is the standard attack select rule):
-	choose row with an Option of the action of the main actor attacking the chosen target in the Table of AI Combat Options;
+An AI action selection rule for an at-Act person (called P) (this is the standard attack select rule):
+	choose row with an Option of the action of the main actor attacking the chosen target in the Table of AI Action Options;
 	if the normalised chance-to-win is 0:
 		now the Action Weight entry is -100;
 	decrease the Action Weight entry by 5;
 	increase the Action Weight entry by the normalised chance-to-win;
 
-A standard AI action selection rule for a person (called P) (this is the standard concentration select rule):
-	choose row with an Option of the action of P concentrating in the Table of AI Combat Options;
+An AI action selection rule for a person (called P) (this is the standard concentration select rule):
+	choose row with an Option of the action of P concentrating in the Table of AI Action Options;
 	increase the Action Weight entry by 5;
 	decrease the Action Weight entry by the chance-to-win;
 	if the concentration of P is 3:
 		now the Action Weight entry is -100;
 
-A standard AI action selection rule for an at-Act person (called P) (this is the concentration influences attacking rule):
-	choose row with an Option of the action of the main actor attacking the chosen target in the Table of AI Combat Options;
+An AI action selection rule for an at-Act person (called P) (this is the concentration influences attacking rule):
+	choose row with an Option of the action of the main actor attacking the chosen target in the Table of AI Action Options;
 	increase the Action Weight entry by the concentration of the chosen target;
 	if the concentration of the chosen target is 3:
 		increase the Action Weight entry by 2;
 
-A standard AI action selection rule for an at-React person (called P) (this is the standard parry and dodge against attack select rule):
+An AI action selection rule for an at-React person (called P) (this is the standard parry and dodge against attack select rule):
 	if the main actor's action is the attacking action:
 		let the attacker's weapon be a random readied weapon enclosed by the main actor;
 		let the defendant's weapon be a random readied weapon enclosed by P;
@@ -873,40 +872,32 @@ A standard AI action selection rule for an at-React person (called P) (this is t
 		if parry rating is greater than the active parry max of the defendant's weapon:
 			now parry rating is the active parry max of the defendant's weapon;
 		[ Adjust the weight of dodging ]
-		choose row with an Option of the action of P dodging in the Table of AI Combat Options;
+		choose row with an Option of the action of P dodging in the Table of AI Action Options;
 		increase the Action Weight entry by dodgability;
 		if parry rating is greater than dodgability:
 			decrease the Action Weight entry by 100;
 		[ Adjust the weight of parrying ]
-		choose row with an Option of the action of P parrying in the Table of AI Combat Options;
+		choose row with an Option of the action of P parrying in the Table of AI Action Options;
 		increase the Action Weight entry by parry rating;
 		if parry rating is 0:
 			decrease the Action Weight entry by 100;
 		if dodgability is greater than parry rating:
 			decrease the Action Weight entry by 100.
 
-A standard AI action selection rule for a person (called P) when the chosen weapon is not readied (this is the don't attack or concentrate with an unreadied weapon rule):
+An AI action selection rule for a person (called P) when the chosen weapon is not readied (this is the don't attack or concentrate with an unreadied weapon rule):
 	if P is at-Act:
-		choose row with an Option of the action of P attacking the chosen target in the Table of AI Combat Options;
+		choose row with an Option of the action of P attacking the chosen target in the Table of AI Action Options;
 		now the Action Weight entry is -1000;
-	choose row with an Option of the action of P concentrating in the Table of AI Combat Options;
+	choose row with an Option of the action of P concentrating in the Table of AI Action Options;
 	now the Action Weight entry is -100;
-	[ Incorporated into this is the consider readying rule. ]
-	[choose row with an Option of the action of P readying the chosen weapon in the Table of AI Combat Options;
-	increase the Action Weight entry by 5;]
 
-Last standard AI action selection rule (this is the randomise the action result rule):
-	repeat through the Table of AI Combat Options:
-		increase the Action Weight entry by a random number between 0 and 5;
-[		say "[Option entry]: [Target weight entry][line break]"; [For testing]]
+
 
 
 
 Volume - Plug-ins
 
 Chapter - Reloadable Weapons (Standard Plug-in)
-
-Section - Reloading
 
 A weapon has a number called the maximum shots. The maximum shots of a weapon is usually 0.
 A weapon has a number called the current shots. The current shots of a weapon is usually 0.
@@ -937,17 +928,16 @@ After printing the name of a weapon (called item) when taking inventory (this is
 			otherwise:
 				say " (no [shots text of item] left; cannot be [reload stem text of item]ed)".
 
-An aftereffects rule (this is the decrease ammo rule):
-	let item be a random readied weapon enclosed by the global attacker;
-	if the maximum shots of item is greater than 0 begin;
-		decrease the current shots of item by 1;
-	end if.
+After an actor hitting when the maximum shots of the global attacker weapon is greater than 0 (this is the decrease ammo rule):
+	decrease the current shots of the global attacker weapon by 1;
+	continue the action;
 
 Check attacking (this is the cannot attack when out of ammo rule):
 	let item be a random readied weapon enclosed by the player;
-	if the maximum shots of item is greater than 0:
-		if the current shots of item is not greater than 0:
-			say "[out of ammo text of item][paragraph break]" instead.
+	if the maximum shots of item is greater than 0 and the current shots of item is not greater than 0:
+		say "[out of ammo text of item][paragraph break]" instead.
+
+Section - Reloading
 
 Reloading is an action applying to one carried thing.
 
@@ -956,24 +946,20 @@ Understand "reload [held weapon]" as reloading.
 Does the player mean reloading an unloaded readied weapon enclosed by the player: it is very likely.
 Does the player mean reloading an unloaded weapon enclosed by the player: it is likely.
 
-Check reloading (this is the cannot reload weapons that use no ammo rule):
-	if the maximum shots of the noun is 0:
-		take no time;
-		say "[The noun] does not use ammunition." instead;
+Check reloading when the maximum shots of the noun is 0 (this is the cannot reload weapons that use no ammo rule):
+	take no time;
+	say "[The noun] does not use ammunition." instead;
 	
-Check reloading (this is the cannot reload unreloadable weapons rule):	
-	if the maximum load time of the noun is -1:
-		take no time;
-		say "[The noun] cannot be [reload stem text of the noun]ed." instead;
+Check reloading when the maximum load time of the noun is -1 (this is the cannot reload unreloadable weapons rule):	
+	take no time;
+	say "[The noun] cannot be [reload stem text of the noun]ed." instead;
 	
-Check reloading (this is the cannot reload fully loaded weapons rule):	
-	if the current shots of the noun is the maximum shots of the noun:
-		take no time;
-		say "[The noun] is already loaded." instead.
+Check reloading when the current shots of the noun is the maximum shots of the noun (this is the cannot reload fully loaded weapons rule):	
+	take no time;
+	say "[The noun] is already loaded." instead.
 
-Carry out an actor reloading (this is the ready upon reloading rule):
-	if the noun is not readied:
-		silently try readying the noun.
+Carry out an actor reloading a not readied weapon (this is the ready upon reloading rule):
+	silently try readying the noun;
 
 Carry out an actor reloading (this is the zero current ammo on reloading rule):
 	now current shots of the noun is 0.
@@ -990,19 +976,16 @@ Report an actor reloading (this is the standard report reloading rule):
 	otherwise:
 		say "[The actor] [if the current load time of the noun plus 1 is the maximum load time of the noun]start[s][otherwise]continue[s][end if] [reload stem text of the noun]ing [the noun].".
 
-
-
-Section - Reloading and choosing a weapon
+Section - Reloading and choosing a weapon AI rules
 
 [Weapons with high load times and limited ammo should not be given a penalty if they are already readied and full; some penalty if they are not readied; and a larger penalty if they are not readied and out of ammo.]
 
 [ Move unloaded into the preample? ]
-Standard AI weapon selection rule for a weapon (called W) (this is the do not choose an empty weapon that cannot be reloaded rule):
-	if the W is unloaded:
-		if the maximum load time of the W is -1:
-			decrease the Weight by 1000;
+An AI weapon selection rule for an unloaded weapon (called W) (this is the do not choose an empty weapon that cannot be reloaded rule):
+	if the maximum load time of W is -1:
+		decrease the Weight by 1000;
 
-Standard AI weapon selection rule for a weapon (called W) (this is the do not prefer weapons that need to be reloaded rule):
+An AI weapon selection rule for a weapon (called W) (this is the do not prefer weapons that need to be reloaded rule):
 	if W is not readied or the current shots of W is 0:
 		if the maximum shots of the W is not 0:
 			if the maximum load time of the W is greater than 0:
@@ -1027,23 +1010,23 @@ Standard AI weapon selection rule for a weapon (called W) (this is the do not pr
 [Weapons with 0 ammo and a maximum load time of -1 should NOT be chosen.]
 
 [ We will only load an unloaded weapon. ]
-First standard AI action selection rule for a person (called P) when the chosen weapon is waiting to be reloaded (this is the consider reloading rule):
-	choose a blank Row in the Table of AI Combat Options;
+First AI action selection rule for a person (called P) when the chosen weapon is waiting to be reloaded (this is the consider reloading rule):
+	choose a blank Row in the Table of AI Action Options;
 	now the Option entry is the action of P reloading the chosen weapon;
 	now the Action Weight entry is 5.
 
-A standard AI action selection rule for a person (called P) when the chosen weapon is unloaded (this is the don't attack or concentrate with an unloaded weapon rule):
+An AI action selection rule for a person (called P) when the chosen weapon is unloaded (this is the don't attack or concentrate with an unloaded weapon rule):
 	if P is at-Act:
-		choose row with an Option of the action of P attacking the chosen target in the Table of AI Combat Options;
+		choose row with an Option of the action of P attacking the chosen target in the Table of AI Action Options;
 		now the Action Weight entry is -1000;
-	choose row with an Option of the action of P concentrating in the Table of AI Combat Options;
+	choose row with an Option of the action of P concentrating in the Table of AI Action Options;
 	now the Action Weight entry is -100;
 
 
 
 Chapter - Tension (Standard Plug-in)
 
-[Tension is a standard plug-in, since I believe almost any game will benefit from it. Tension is a kind of "drama manager" for combat: it makes sure that long periods in which no apparent progress is made--that is, in which no damage is done--are not experienced as boring, but rather as increasing the tension. The way it works is that every turn when no hit is scored, the tension (a number that varies) is increased by one. High tension gives everyone bonuses on the attack roll, thus increasing the likelihood that something will happen, and on the damage roll, thus increasing the stakes.
+[Tension is a standard plug-in, since I believe almost any game will benefit from it. Tension is a kind of "drama manager" for combat: it makes sure that long periods in which no apparent progress is made--that is, in which no damage is done--are not experienced as boring, but rather as increasing the tension. The way it works is that every turn when no hit is scored, the tension (a number that varies) is increased by one. High tension gives everyone bonuses on the attack roll, thus increasing the likelihood that something will happen, and on the attack damage roll, thus increasing the stakes.
 
 Tension also works as a check and balance on the combat system: if you have made it too hard for people to hit each other, tension will greatly alleviate this problem.]
 
@@ -1057,26 +1040,26 @@ Every turn (this is the standard increase or reset the tension rule):
 		if the tension is greater than 20:
 			now the tension is 20.
 	
-A calculating the attack roll rule (this is the standard tension attack modifier rule):
+An attack modifier rule (this is the standard tension attack modifier rule):
 	let the tension bonus be the tension divided by 2;
 	if the tension bonus is not 0:
 		if the numbers boolean is true:
 			say " + ", the tension bonus, " (tension)[run paragraph on]";
-		increase the roll by the tension bonus;
+		increase the attack strength by the tension bonus;
 		
-A dealing damage rule (this is the standard tension damage modifier rule):
+A damage modifier rule (this is the standard tension damage modifier rule):
 	let the bonus be the tension divided by 3;
 	if the bonus is not 0:
 		if the numbers boolean is true:
 			say " + ", the bonus, " (tension)[run paragraph on]";
-		increase the damage by the bonus.
+		increase the attack damage by the bonus.
 
-An aftereffects rule (this is the standard reduce tension after hit rule):		
-	if the final damage is greater than 0:
-		now the tension is the tension minus 4;
-		now the tension is the tension times 8;
-		now the tension is the tension divided by 10;
-		if the tension is less than 0, now the tension is 0.
+An aftereffects rule when the attack damage is greater than 0 (this is the standard reduce tension after hit rule):		
+	now the tension is the tension minus 4;
+	now the tension is the tension times 8;
+	now the tension is the tension divided by 10;
+	if the tension is less than 0:
+		now the tension is 0;
 
 [A hit must reduce the tension, but not necessarily completely down to 0. We want low tensions to be completely removed by a hit, but larger tension to be removed only partly. The standard rule leads to the following table:
 
@@ -1109,8 +1092,8 @@ You can see that if the current tension is 10 and I am maximally concentrated, m
 Chance to win rule (this is the CTW tension bonus rule):
 	increase the chance-to-win by the tension divided by 2.
 
-A standard AI action selection rule for an at-Act person (called P) (this is the tension influences attacking rule):
-	choose row with an Option of the action of P attacking the chosen target in the Table of AI Combat Options;
+An AI action selection rule for an at-Act person (called P) (this is the tension influences attacking rule):
+	choose row with an Option of the action of P attacking the chosen target in the Table of AI Action Options;
 	increase the Action Weight entry by the tension divided by 4.
 
 

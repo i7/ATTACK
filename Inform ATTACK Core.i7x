@@ -1,4 +1,4 @@
-Version 4/120603 of Inform ATTACK Core by Victor Gijsbers begins here.
+Version 4/120609 of Inform ATTACK Core by Victor Gijsbers begins here.
 
 "The core of the Inform ATTACK system, but without the combat specific code. Think of it as the Advanced Turn-based TActical *Conflict* Kit instead."
 
@@ -78,8 +78,9 @@ After printing the name of a dead person (called body) (this is the proper print
 	if the printing dead property is true and the body is proper-named:
 		say "'s [if body is plural-named]bodies[otherwise]body[end if]".
 
-Understand "dead/killed/body/bodies/corpse" as a person when the item described is dead.
-Understand "body/bodies of" as a person when the item described is dead.
+Understand "body/bodies" as a person.
+Understand "body/bodies of" as a person.
+Understand "dead/killed/corpse" as a person when the item described is dead.
 Understand "alive/live/living" as a person when the item described is alive.
 [Understand "[something related by equality]'s" as a person.] [Doesn't work, unfortunately.]
 
@@ -145,8 +146,6 @@ Section - Combat status
 A combat round state is a kind of value. The combat round states are peace, combat, player choosing, reactions, concluding.
 The specification of a combat round state is "Represents the state of the current combat round. This value kind is stored by the combat status global variable, which determines what happens when the combat round rulebook is run."
 
-Definition: a combat round state is in progress if it is not peace and it is not combat.
-
 To update the combat status:
 	consider the hate rules;
 	if rule succeeded:
@@ -176,17 +175,14 @@ To decide which person is the next participant:
 	remove entry 1 from the participants list;
 	decide on P;
 
-[ Who the AI is currently targetting ]
-The chosen target is a person variable.
-
 Chapter - The combat round rules
 
 The combat round rules is a rulebook.
 
 The starting the combat round rules are a rulebook.
 
-Table of Stored Combat Actions
-Combat Speed	Combat Action
+Table of Delayed Actions
+Action speed	Action
 a number	a stored action
 with 50 blank rows
 
@@ -199,17 +195,18 @@ The abide by the combat round rules rule is listed instead of the parse command 
 The generate action rule is not listed in the turn sequence rules.
 
 [ The turn count should be incremented only if the player faced the command prompt. The time of day however will change regardless. ]
-A turn sequence rule when the combat status is combat (this is the only active players increment the turn count rule):
+A turn sequence rule when the combat status is combat (this is the inactive players don't increment the turn count rule):
 	if the player did something is true:
 		now the player did something is false;
 	otherwise:
 		decrement the turn count.
-The only active players increment the turn count rule is listed after the advance time rule in the turn sequence rules.
+The inactive players don't increment the turn count rule is listed after the advance time rule in the turn sequence rules.
 
 Section - Non-combat rules
 
-A first combat round rule when the combat status is not in progress (this is the update the combat status rule):
-	update the combat status;
+A first combat round rule (this is the update the combat status rule):
+	if the combat status is peace or the combat status is combat:
+		update the combat status;
 
 A combat round rule when the combat status is peace (this is the business as usual rule):
 	now the main actor is the player;
@@ -228,10 +225,6 @@ A combat round rule when the combat status is combat (this is the determine the 
 
 A combat round rule when the combat status is combat (this is the consider the starting the combat round rules rule):
 	consider the starting the combat round rules.
-
-[ We make this a rule in case you want to manage initiative some other way. ]
-A starting the combat round rule (this is the reset the initiative of the main actor rule):
-	now the initiative of the main actor is 0;
 
 A combat round rule when the combat status is combat (this is the main actor chooses an action rule):
 	if the main actor is the player:
@@ -253,11 +246,11 @@ A combat round rule when the combat status is player choosing (this is the playe
 		make no decision;
 	rule succeeds;
 
-A combat round rule when the combat status is reactions (this is the AI chooses a reaction rule):
+A combat round rule when the combat status is reactions (this is the reactors choose reactions rule):
 	while the number of entries in the participants list is greater than 0:
 		let P be the next participant;
 		[ We must check that the participant is still alive as they could have been killed by an action that didn't wait for a reaction. ]
-		if P is alive and the combat state of P is at-React:
+		if P is an alive at-React person:
 			if P is the player:
 				now the command prompt is the reaction prompt;
 				now the combat status is player choosing;
@@ -267,9 +260,9 @@ A combat round rule when the combat status is reactions (this is the AI chooses 
 	now the combat status is concluding;
 
 A combat round rule when the combat status is concluding (this is the run delayed actions rule):
-	sort the Table of Stored Combat Actions in Combat Speed order;
-	repeat through the Table of Stored Combat Actions:
-		try the Combat Action entry;
+	sort the Table of Delayed Actions in Action speed order;
+	repeat through the Table of Delayed Actions:
+		try the Action entry;
 		blank out the whole row;
 
 A combat round rule when the combat status is concluding (this is the conclude the combat round rule):
@@ -284,7 +277,7 @@ A combat round rule when the combat status is concluding (this is the conclude t
 
 Chapter - Running the parser
 
-[ Running the parser will keep requesting commands until a successful command is obtained. ]
+[ Running the parser will keep requesting commands until a successful command is obtained. Despite the name it not only runs the parser, but also the action the user commands. ]
 Running the parser is an activity.
 
 The parse command rule is listed first in the for running the parser rules.
@@ -294,11 +287,11 @@ The generate action rule is listed last in the for running the parser rules.
 
 Chapter - Initiative
 
-[ See manual section 2.3.2 ]
+[ Initative determines whose turn it is, and if an action puts several people at-React, the order in which they will react.
 
-[The person with the highest initiative is the one whose turn it is.]
+By default the initative of the main actor will be reset each round, so that the participants will take turns, though occassionally you will get two turns in a row because of the random initiative rule. ]
+
 A person has a number called the initiative.
-The initiative of a person is usually 0.
 
 [ Must rename because of an I7 bug where the rulebook name conflicts with the property name in the sort call below. ]
 The initiative update rules are a rulebook.
@@ -307,7 +300,8 @@ Section - Standard initiative rules
 
 First initiative update rule (this is the no low initiative trap rule):
 	repeat with X running through all alive persons enclosed by the location:				
-		if the initiative of X is less than -2, now the initiative of X is -2.
+		if the initiative of X is less than -2:
+			now the initiative of X is -2.
 		
 Initiative update rule (this is the increase initiative every round rule):
 	repeat with X running through all alive persons enclosed by the location:
@@ -317,9 +311,8 @@ Initiative update rule (this is the random initiative rule):
 	repeat with X running through all alive persons enclosed by the location:				
 		increase the initiative of X by a random number between 0 and 2.
 
-[ See also:
-	the reset the initiative of the main actor rule
-	other rules in Inform ATTACK ]
+A starting the combat round rule (this is the reset the initiative of the main actor rule):
+	now the initiative of the main actor is 0;
 
 Section - Rebuilding the participants list
 
@@ -422,10 +415,15 @@ After looking (this is the second make sure that going is not acting fast rule):
 Volume - AI
 
 [ Each person has an activity which controls what they do. It is person based so that the person themself is fed back into it. ]
-
 A person has a person based rulebook called the AI rules.
 The Standard AI rules is a person based rulebook.
 The AI rules of a person is usually the Standard AI rules.
+
+[ The AI rules can run for both actors and reactors, so store whose AI rules are currently running. ]
+The running AI is a person variable.
+
+[ Who the AI is choses to target ]
+The chosen target is a person variable.
 
 To run the AI rules for (P - a person):
 	consider AI rules of P for P;
@@ -436,6 +434,25 @@ To run the AI rules for (P - a person):
 	In the third stage, we decide whether to attack or whether to do something else--like concentrating, dodging, readying a weapon, and so on.
 	
 These choices are made by a series of rulebooks which alter the weighting of each potential target/weapon/action. ]
+
+Section - Showing AI weightings unindexed
+
+Show AI weightings is a truth state variable.
+
+To #if debug and showing weightings: (- #ifdef DEBUG; if ( (+ Show AI weightings +) ) { -).
+To #endif debug and showing weightings: (- } #endif; -).
+
+Section - Switching weightings on and off - not for release
+
+Switching weightings on is an action out of world. Understand "weightings on" as switching weightings on.
+Carry out switching weightings on (this is the standard switching weightings on rule):
+	now show AI weightings is true;
+	say "You will now see the AI weightings.".
+
+Switching weightings off is an action out of world. Understand "weightings off" as switching weightings off.
+Carry out switching weightings off (this is the standard switching weightings off rule):
+	now show AI weightings is false;
+	say "You will no longer see the AI weightings.".
 
 Chapter - The pressing relation
 
@@ -451,83 +468,91 @@ To have (A - a person) start pressing (B - a person):
 
 Chapter - Selecting a target
 
-Table of AI Combat Person Options
+Table of AI Target Options
 Person	Target weight
 a person	a number
 with 50 blank rows
 
-The standard AI target selection rules are a person based rulebook producing a number.
-The standard AI target selection rulebook has a number called the Weight.
-
-A starting the combat round rule (this is the reset the chosen target rule):
-	now the chosen target is the stand in for no one;
+The AI target selection rules are a person based rulebook producing a number.
+The AI target selection rulebook has a number called the Weight.
 
 A first Standard AI rule for a person (called P) (this is the select a target rule):
 	[ If we already have a target (see the next rule) don't try to choose one again ]
 	if the chosen target is not the stand in for no one:
 		make no decision;
-	let target count be the number of alive people who are opposed by P enclosed by the location;
+	let target count be the number of (alive people enclosed by the location) who are opposed by P;
 	[ Don't consider further stages if we don't have a target. This won't happen unless you add new factions with uneven hate relationships. ]
 	if target count is 0:
 		rule succeeds;
+	[ If there's only one potential target the choice is easy ]
 	if target count is 1:
-		now the chosen target is a random alive person who is opposed by P enclosed by the location;
+		now the chosen target is a random (alive people enclosed by the location) who is opposed by P;
 		make no decision;
 	[ We have many potential targets to consider the AI target selection rules ]
-	blank out the whole of the Table of AI Combat Person Options;
-	repeat with target running through all alive people who are opposed by P enclosed by the location:
-		let weight be the number produced by the standard AI target selection rules for target;
-		choose a blank Row in the Table of AI Combat Person Options;
+	blank out the whole of the Table of AI Target Options;
+	repeat with target running through (alive people enclosed by the location) who are opposed by P:
+		let weight be the number produced by the AI target selection rules for target;
+		choose a blank Row in the Table of AI Target Options;
 		now the Person entry is target;
 		now the Target weight entry is weight;
-	sort the Table of AI Combat Person Options in random order;
-	sort the Table of AI Combat Person Options in reverse Target weight order;
-	choose row 1 in the Table of AI Combat Person Options;
+	sort the Table of AI Target Options in random order;
+	sort the Table of AI Target Options in reverse Target weight order;
+	#if debug and showing weightings;
+	repeat through Table of AI Target Options:
+		say "[Target weight entry]: [Person entry][line break]";
+	#endif debug and showing weightings;
+	choose row 1 in the Table of AI Target Options;
 	now the chosen target is the Person entry;
 
 [ Reactors can only choose the main actor. Unlist this rule if you want them to choose someone else. ]
 A first Standard AI rule for an at-React person (called P) (this is the reactors target the main actor rule):
 	now the chosen target is the main actor;
 
-A standard AI target selection rule for a person (called target) (this is the do not prefer passive targets rule):
-	if the target is passive:
-		decrease the Weight by 5;
+A first Standard AI rule for a person (called P) (this is the reset AI variables rule):
+	now the running AI is P;
+	now the chosen target is the stand in for no one;
 
-A standard AI target selection rule for a person (called target) (this is the prefer targets you press rule):
-	if the main actor presses the target:
+An AI target selection rule for a passive person (this is the do not prefer passive targets rule):
+	decrease the Weight by 5;
+
+An AI target selection rule for a person (called target) (this is the prefer targets you press rule):
+	if the running AI presses the target:
 		increase the Weight by 3;
 
-A standard AI target selection rule for a person (called target) (this is the prefer those who press you rule):
-	if the target presses the main actor:
+An AI target selection rule for a person (called target) (this is the prefer those who press you rule):
+	if the target presses the running AI:
 		increase the Weight by 1;
 
-A standard AI target selection rule for a person (called target) (this is the prefer the player rule):
-	if the target is the player:
-		increase the Weight by 1;
+An AI target selection rule for the player (this is the prefer the player rule):
+	increase the Weight by 1;
 
-A standard AI target selection rule (this is the randomise the target result rule):
+An AI target selection rule (this is the randomise the target result rule):
 	increase the Weight by a random number between 0 and 4;
 
-A last standard AI target selection rule (this is the return the target weight rule):
+A last AI target selection rule (this is the return the target weight rule):
 	rule succeeds with result Weight;
 
 
 
 Chapter - Selecting an action
 
-Table of AI Combat Options
+Table of AI Action Options
 Option	Action Weight
 a stored action	a number
 with 50 blank rows
 
-The standard AI action selection rules are a person based rulebook.
+The AI action selection rules are a person based rulebook.
 
 A last Standard AI rule for a person (called P) (this is the select an action and do it rule):
-	blank out the whole of the Table of AI Combat Options;
-	consider the standard AI action selection rules for P;
-	sort the Table of AI Combat Options in random order;
-	sort the Table of AI Combat Options in reverse Action Weight order;
-	choose row one in the Table of AI Combat Options;
+	blank out the whole of the Table of AI Action Options;
+	consider the AI action selection rules for P;
+	sort the Table of AI Action Options in random order;
+	sort the Table of AI Action Options in reverse Action Weight order;
+	choose row one in the Table of AI Action Options;
+	#if debug and showing weightings;
+	repeat through Table of AI Action Options:
+		say "[Action weight entry]: [Option entry][line break]";
+	#endif debug and showing weightings;
 	[ Don't forget to do it! ]
 	try the Option entry;
 	[ Store it for reactions ]
@@ -537,6 +562,10 @@ A last Standard AI rule for a person (called P) (this is the select an action an
 [ Each potential action should have a First rule which will add the action to the Table of AI Combat Options.  Subsequent rules can then modify the Action Weight.
 
 Actions which are limited to the Actor/Reactor should specify an at-Act/at-React person in the rule preamble. ]
+
+Last AI action selection rule (this is the randomise the action result rule):
+	repeat through the Table of AI Action Options:
+		increase the Action Weight entry by a random number between 0 and 5;
 
 
 
@@ -556,8 +585,8 @@ Carry out an actor waiting (this is the waiting lets someone else go first rule)
 	if the actor is not the player:
 		say "[CAP-actor] wait[s].".]
 
-First standard AI action selection rule for a person (called P) (this is the consider waiting rule):
-	choose a blank Row in the Table of AI Combat Options;
+First AI action selection rule for a person (called P) (this is the consider waiting rule):
+	choose a blank Row in the Table of AI Action Options;
 	now the Option entry is the action of P waiting;
 	now the Action Weight entry is -20;
 	[ Could definitely do with some more logic here! ]
