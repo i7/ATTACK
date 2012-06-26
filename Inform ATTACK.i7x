@@ -1,4 +1,4 @@
-Version 4/120609 of Inform ATTACK by Victor Gijsbers begins here.
+Version 4/120626 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -116,7 +116,7 @@ Chapter - The weapon kind
 A weapon is a kind of thing.
 
 [ A readied weapon is one that is not just carried by the actor, but actually in use. ]
-A weapon is either readied or not readied. A weapon is usually not readied.
+A weapon can be readied. A weapon is usually not readied.
 
 After printing the name of a readied weapon while taking inventory (this is the readied inventory listing rule):
 	say " (readied)".
@@ -167,7 +167,7 @@ Definition: a weapon is artificial if it is not a natural weapon.
 
 Section - Making sure a weapon is always readied
 
-To ready natural weapons (deprecated):
+To ready natural weapons:
 	repeat with X running through all alive persons enclosed by the location:
 		if X encloses no readied weapon:
 			let item be a random natural weapon part of X;
@@ -184,10 +184,7 @@ When play begins (this is the ready weapons for everyone rule):
 				now item is readied.
 
 A starting the combat round rule (this is the ready natural weapons rule):
-	repeat with X running through all alive persons enclosed by the location:
-		if X encloses no readied weapon:
-			let item be a random natural weapon part of X;
-			now item is readied;
+	ready natural weapons;
 
 Section - Unreadying weapons
 
@@ -574,7 +571,7 @@ Chapter - Parrying
 
 Parrying is an action applying to nothing. Understand "parry" and "p" and "pa" as parrying.
 
-A person can be at parry or not at parry. A person is usually not at parry.
+A person can be at parry. A person is usually not at parry.
 
 Check parrying (this is the cannot parry when not reacting rule):
 	if the combat state of the player is not at-React:
@@ -621,7 +618,7 @@ Chapter - Dodging
 
 Dodging is an action applying to nothing. Understand "dodge" and "do" as dodging.
 
-A person can be at dodge or not at dodge. A person is usually not at dodge.
+A person can be at dodge. A person is usually not at dodge.
 
 Check dodging (this is the cannot dodge when not reacting rule):
 	if the combat state of the player is not at-React:
@@ -713,7 +710,7 @@ Section - Selecting a weapon
 Table of AI Weapon Options
 Weapon	Weapon weight
 a weapon	a number
-with 50 blank rows
+with 10 blank rows
 
 The AI weapon selection rules are a weapon based rulebook producing a number.
 The AI weapon selection rulebook has a number called the Weight.

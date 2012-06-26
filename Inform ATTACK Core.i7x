@@ -1,4 +1,4 @@
-Version 4/120609 of Inform ATTACK Core by Victor Gijsbers begins here.
+Version 4/120626 of Inform ATTACK Core by Victor Gijsbers begins here.
 
 "The core of the Inform ATTACK system, but without the combat specific code. Think of it as the Advanced Turn-based TActical *Conflict* Kit instead."
 
@@ -68,6 +68,11 @@ To say dead property (deprecated):
 To say the name of (P - a person):
 	now the printing dead property is false;
 	say the P;
+	now the printing dead property is true;
+
+To say the names of (L - a list of people):
+	now the printing dead property is false;
+	say L with definite articles;
 	now the printing dead property is true;
 
 Before printing the name of a dead person (called body) (this is the improper print dead property rule):
@@ -184,7 +189,7 @@ The starting the combat round rules are a rulebook.
 Table of Delayed Actions
 Action speed	Action
 a number	a stored action
-with 50 blank rows
+with 10 blank rows
 
 Section - Altering the turn sequence rules
 
@@ -471,7 +476,7 @@ Chapter - Selecting a target
 Table of AI Target Options
 Person	Target weight
 a person	a number
-with 50 blank rows
+with 10 blank rows
 
 The AI target selection rules are a person based rulebook producing a number.
 The AI target selection rulebook has a number called the Weight.
@@ -539,7 +544,7 @@ Chapter - Selecting an action
 Table of AI Action Options
 Option	Action Weight
 a stored action	a number
-with 50 blank rows
+with 20 blank rows
 
 The AI action selection rules are a person based rulebook.
 
