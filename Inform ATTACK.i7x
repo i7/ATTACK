@@ -587,18 +587,19 @@ Carry out an actor parrying (this is the standard carry out parrying rule):
 Report an actor parrying (this is the standard parry prose rule):	
 	say "[The actor] strike[s] up a defensive pose.".
 
-An attack modifier rule when the global defender is at parry (this is the parry defence bonus rule):
-	let n be the passive parry max of global attacker weapon;
-	if the active parry max of global defender weapon is less than n:
-		now n is the active parry max of global defender weapon;
-	if the numbers boolean is true:
-		if n is greater than 0:
-			say " - ", n, " (defender parrying)[run paragraph on]";
-		if n is 0 and active parry max of global defender weapon is 0:
-			say " - 0 (cannot parry with [global defender weapon])[run paragraph on]";
-		otherwise:
-			if n is 0, say " - 0 (cannot parry against [global attacker weapon])[run paragraph on]";
-	decrease the attack strength by n;
+An attack modifier rule (this is the parry defence bonus rule):
+	if the global defender is at parry:
+		let n be the passive parry max of global attacker weapon;
+		if the active parry max of global defender weapon is less than n:
+			now n is the active parry max of global defender weapon;
+		if the numbers boolean is true:
+			if n is greater than 0:
+				say " - ", n, " (defender parrying)[run paragraph on]";
+			if n is 0 and active parry max of global defender weapon is 0:
+				say " - 0 (cannot parry with [global defender weapon])[run paragraph on]";
+			otherwise:
+				if n is 0, say " - 0 (cannot parry against [global attacker weapon])[run paragraph on]";
+		decrease the attack strength by n;
 
 After an actor hitting (this is the no longer at parry after the attack rule):
 	now the global defender is not at parry;
@@ -631,14 +632,15 @@ Carry out an actor dodging (this is the standard carry out dodging rule):
 Report an actor dodging (this is the standard dodge prose rule):
 	say "[The actor] get[s] ready for quick evasive maneuvers.".
 
-An attack modifier rule when the global defender is at dodge (this is the dodge defence bonus rule):
-	let n be the dodgability of global attacker weapon;
-	if the numbers boolean is true:
-		if n is greater than 0:
-			say " - ", n, " (defender dodging)[run paragraph on]";
-		if n is 0:
-			say " - 0 (cannot dodge)[run paragraph on]";
-	decrease the attack strength by n;
+An attack modifier rule (this is the dodge defence bonus rule):
+	if the global defender is at dodge:
+		let n be the dodgability of global attacker weapon;
+		if the numbers boolean is true:
+			if n is greater than 0:
+				say " - ", n, " (defender dodging)[run paragraph on]";
+			if n is 0:
+				say " - 0 (cannot dodge)[run paragraph on]";
+		decrease the attack strength by n;
 
 After an actor hitting (this is the no longer at dodge after the attack rule):
 	now the global defender is not at dodge;
