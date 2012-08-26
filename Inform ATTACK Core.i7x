@@ -207,6 +207,18 @@ A turn sequence rule when the combat status is combat (this is the inactive play
 		decrement the turn count.
 The inactive players don't increment the turn count rule is listed after the advance time rule in the turn sequence rules.
 
+Section - Acting Fast
+
+The even acting fast rules are a rulebook.
+
+This is the acting fast rule: [Stops the turn sequence rules before we reach the every turn rules.]
+	consider the even acting fast rules;
+	if the take no time boolean is true:
+		rule succeeds.
+		
+The acting fast rule is listed before the every turn stage rule in the turn sequence rules.
+
+
 Section - Non-combat rules
 
 A first combat round rule (this is the update the combat status rule):
@@ -249,6 +261,8 @@ A combat round rule when the combat status is player choosing (this is the playe
 		now the combat status is reactions;
 		now the player did something is true;
 		make no decision;
+	otherwise:
+		consider the even acting fast rules;
 	rule succeeds;
 
 A combat round rule when the combat status is reactions (this is the reactors choose reactions rule):
@@ -553,11 +567,11 @@ A last Standard AI rule for a person (called P) (this is the select an action an
 	consider the AI action selection rules for P;
 	sort the Table of AI Action Options in random order;
 	sort the Table of AI Action Options in reverse Action Weight order;
-	choose row one in the Table of AI Action Options;
 	#if debug and showing weightings;
 	repeat through Table of AI Action Options:
 		say "[Action weight entry]: [Option entry][line break]";
 	#endif debug and showing weightings;
+	choose row one in the Table of AI Action Options;
 	[ Don't forget to do it! ]
 	try the Option entry;
 	[ Store it for reactions ]
