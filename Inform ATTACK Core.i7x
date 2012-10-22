@@ -1,4 +1,4 @@
-Version 4/120626 of Inform ATTACK Core by Victor Gijsbers begins here.
+Version 4/121022 of Inform ATTACK Core by Victor Gijsbers begins here.
 
 "The core of the Inform ATTACK system, but without the combat specific code. Think of it as the Advanced Turn-based TActical *Conflict* Kit instead."
 
@@ -207,18 +207,6 @@ A turn sequence rule when the combat status is combat (this is the inactive play
 		decrement the turn count.
 The inactive players don't increment the turn count rule is listed after the advance time rule in the turn sequence rules.
 
-Section - Acting Fast
-
-The even acting fast rules are a rulebook.
-
-This is the acting fast rule: [Stops the turn sequence rules before we reach the every turn rules.]
-	consider the even acting fast rules;
-	if the take no time boolean is true:
-		rule succeeds.
-		
-The acting fast rule is listed before the every turn stage rule in the turn sequence rules.
-
-
 Section - Non-combat rules
 
 A first combat round rule (this is the update the combat status rule):
@@ -228,7 +216,7 @@ A first combat round rule (this is the update the combat status rule):
 A combat round rule when the combat status is peace (this is the business as usual rule):
 	now the main actor is the player;
 	now the command prompt is the peaceful prompt;
-	carry out the running the parser activity;
+	carry out the taking a player action activity;
 	[ Skip the every turn rules for out of world actions ]
 	if the meta flag is true:
 		rule succeeds;
@@ -254,15 +242,13 @@ A combat round rule when the combat status is combat (this is the main actor cho
 [ The player now gets to choose an action. This rule is also used for choosing reactions, as the next combat status is the same: reactions.
 This rule will loop until an appropriate action is chosen. ]
 A combat round rule when the combat status is player choosing (this is the player chooses an action or reaction rule):
-	carry out the running the parser activity;
+	carry out the taking a player action activity;
 	if take no time boolean is false:
 		if the combat state of the player is at-Act:
 			now the main actor's action is the action name part of the current action;
 		now the combat status is reactions;
 		now the player did something is true;
 		make no decision;
-	otherwise:
-		consider the even acting fast rules;
 	rule succeeds;
 
 A combat round rule when the combat status is reactions (this is the reactors choose reactions rule):
@@ -279,6 +265,7 @@ A combat round rule when the combat status is reactions (this is the reactors ch
 	now the combat status is concluding;
 
 A combat round rule when the combat status is concluding (this is the run delayed actions rule):
+	sort the Table of Delayed Actions in random order;
 	sort the Table of Delayed Actions in Action speed order;
 	repeat through the Table of Delayed Actions:
 		try the Action entry;
@@ -294,13 +281,13 @@ A combat round rule when the combat status is concluding (this is the conclude t
 
 
 
-Chapter - Running the parser
+Chapter - Taking a player action
 
-[ Running the parser will keep requesting commands until a successful command is obtained. Despite the name it not only runs the parser, but also the action the user commands. ]
-Running the parser is an activity.
+[ Taking a player action will keep requesting commands until a successful (non-out of world) command is obtained. ]
+Taking a player action is an activity.
 
-The parse command rule is listed first in the for running the parser rules.
-The generate action rule is listed last in the for running the parser rules.
+The parse command rule is listed first in the for taking a player action rules.
+The generate action rule is listed last in the for taking a player action rules.
 
 
 
@@ -360,8 +347,8 @@ To take no time:
 To say take no time:
 	take no time.
 
-[ Before reading a command we must reset the boolean. ]
-Before running the parser (this is the reset take no time boolean rule):
+[ Before taking a player action we must reset the boolean. ]
+Before taking a player action (this is the reset take no time boolean rule):
 	now the take no time boolean is false.
 
 [ Set the boolean when trying a fast action. ]
@@ -369,7 +356,7 @@ Rule for setting action variables when acting fast (this is the acting fast acti
 	now the take no time boolean is true.
 
 [ All out of world actions are fast. ]
-After running the parser (this is the all out of world actions are fast rule):
+After taking a player action (this is the all out of world actions are fast rule):
 	if the meta flag is true:
 		now the take no time boolean is true.
 

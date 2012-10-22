@@ -1,4 +1,4 @@
-Version 4/120626 of Inform ATTACK by Victor Gijsbers begins here.
+Version 4/121022 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -255,6 +255,20 @@ Setting action variables for hitting (this is the reset hitting variables rule):
 	have the actor start pressing the noun;
 	now the attack strength is 0;
 	now the attack damage is 0;
+
+
+
+Section - Checking that the hit can still occur
+
+[ As a result of various reactions, it may no longer be possible to hit ]
+
+First check an actor hitting (this is the stop hitting if either combatant is missing rule):
+	if the location of the global attacker is not the location or the location of the global defender is not the location:
+		stop the action;
+
+First check an actor hitting (this is the stop hitting if either combatant is dead rule):
+	if the global attacker is dead or the global defender is dead:
+		stop the action;
 
 
 
