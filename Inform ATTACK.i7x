@@ -615,7 +615,7 @@ An attack modifier rule (this is the parry defence bonus rule):
 				if n is 0, say " - 0 (cannot parry against [global attacker weapon])[run paragraph on]";
 		decrease the attack strength by n;
 
-After an actor hitting (this is the no longer at parry after the attack rule):
+Last after an actor hitting (this is the no longer at parry after the attack rule):
 	now the global defender is not at parry;
 	continue the action;
 
@@ -656,7 +656,7 @@ An attack modifier rule (this is the dodge defence bonus rule):
 				say " - 0 (cannot dodge)[run paragraph on]";
 		decrease the attack strength by n;
 
-After an actor hitting (this is the no longer at dodge after the attack rule):
+Last after an actor hitting (this is the no longer at dodge after the attack rule):
 	now the global defender is not at dodge;
 	continue the action;
 
