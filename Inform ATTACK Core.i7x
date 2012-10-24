@@ -487,20 +487,25 @@ A first Standard AI rule for a person (called P) (this is the select a target ru
 	if the chosen target is not the stand in for no one:
 		make no decision;
 	let target count be the number of (alive people enclosed by the location) who are opposed by P;
+	if P opposes P:
+		decrease target count by 1;
 	[ Don't consider further stages if we don't have a target. This won't happen unless you add new factions with uneven hate relationships. ]
 	if target count is 0:
 		rule succeeds;
 	[ If there's only one potential target the choice is easy ]
 	if target count is 1:
 		now the chosen target is a random (alive people enclosed by the location) who is opposed by P;
+		while chosen target is P:
+			now the chosen target is a random (alive people enclosed by the location) who is opposed by P;
 		make no decision;
 	[ We have many potential targets to consider the AI target selection rules ]
 	blank out the whole of the Table of AI Target Options;
 	repeat with target running through (alive people enclosed by the location) who are opposed by P:
-		let weight be the number produced by the AI target selection rules for target;
-		choose a blank Row in the Table of AI Target Options;
-		now the Person entry is target;
-		now the Target weight entry is weight;
+		unless target is P:
+			let weight be the number produced by the AI target selection rules for target;
+			choose a blank Row in the Table of AI Target Options;
+			now the Person entry is target;
+			now the Target weight entry is weight;
 	sort the Table of AI Target Options in random order;
 	sort the Table of AI Target Options in reverse Target weight order;
 	#if debug and showing weightings;
