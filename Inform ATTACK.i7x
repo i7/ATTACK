@@ -1,4 +1,4 @@
-Version 4/121022 of Inform ATTACK by Victor Gijsbers begins here.
+Version 4/121102 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -379,7 +379,6 @@ Section - Aftereffects
 
 The aftereffects rules is a rulebook.
 
-[ We need to run the aftereffects after the report rules, but the normal Inform action processing system doesn't give us any place to do that! But we can add a rule to the specific action-processing rules which will do the job. ]
 After reporting an actor hitting (this is the consider the aftereffects rules rule):
 	if the player is alive:
 		consider the aftereffects rules;
@@ -615,8 +614,9 @@ An attack modifier rule (this is the parry defence bonus rule):
 				if n is 0, say " - 0 (cannot parry against [global attacker weapon])[run paragraph on]";
 		decrease the attack strength by n;
 
-Last after an actor hitting (this is the no longer at parry after the attack rule):
+Last after an actor hitting (this is the no longer at parry or dodge after the attack rule):
 	now the global defender is not at parry;
+	now the global defender is not at dodge;
 	continue the action;
 
 Chance to win rule (this is the CTW parry bonus rule):
@@ -656,9 +656,10 @@ An attack modifier rule (this is the dodge defence bonus rule):
 				say " - 0 (cannot dodge)[run paragraph on]";
 		decrease the attack strength by n;
 
-Last after an actor hitting (this is the no longer at dodge after the attack rule):
+[ See code for parrying ]
+[Last after an actor hitting (this is the no longer at dodge after the attack rule):
 	now the global defender is not at dodge;
-	continue the action;
+	continue the action;]
 
 Chance to win rule (this is the CTW dodge bonus rule):
 	let n be the dodgability of the chosen weapon;
@@ -877,7 +878,7 @@ An AI action selection rule for an at-Act person (called P) (this is the concent
 		increase the Action Weight entry by 2;
 
 An AI action selection rule for an at-React person (called P) (this is the standard parry and dodge against attack select rule):
-	if the main actor's action is the attacking action:
+	if the action name part of the main actor's action is the attacking action:
 		let the attacker's weapon be a random readied weapon enclosed by the main actor;
 		let the defendant's weapon be a random readied weapon enclosed by P;
 		let dodgability be the dodgability of the attacker's weapon;

@@ -1,4 +1,4 @@
-Version 4/121022 of Inform ATTACK Core by Victor Gijsbers begins here.
+Version 4/121102 of Inform ATTACK Core by Victor Gijsbers begins here.
 
 "The core of the Inform ATTACK system, but without the combat specific code. Think of it as the Advanced Turn-based TActical *Conflict* Kit instead."
 
@@ -167,8 +167,7 @@ The combat status is a combat round state variable. The combat status is peace.
 [ The main actor is the person with the highest initiative, or the player if not engaged in combat. ]
 The main actor is a person that varies.
 
-[ Can we get away with just storing the action name? The noun/second noun should be known already. ]
-The main actor's action is an action name variable.
+The main actor's action is a stored action variable.
 
 The player did something is a truth state variable.
 
@@ -179,6 +178,8 @@ To decide which person is the next participant:
 	let P be entry 1 of the participants list;
 	remove entry 1 from the participants list;
 	decide on P;
+
+
 
 Chapter - The combat round rules
 
@@ -245,7 +246,7 @@ A combat round rule when the combat status is player choosing (this is the playe
 	carry out the taking a player action activity;
 	if take no time boolean is false:
 		if the combat state of the player is at-Act:
-			now the main actor's action is the action name part of the current action;
+			now the main actor's action is the current action;
 		now the combat status is reactions;
 		now the player did something is true;
 		make no decision;
@@ -281,6 +282,35 @@ A combat round rule when the combat status is concluding (this is the conclude t
 
 
 
+Chapter - Reporting the main action again
+
+[ It is useful to be able to report an action twice. For example if you open a menu when the player is reacting, the main actor's action should be re-reported when the menu is closed. This turns out to be quick tricky. ]
+Reporting again is a truth state variable.
+
+The report an action again rule is listed before the before stage rule in the action-processing rules.
+This is the report an action again rule:
+	if reporting again is true:
+		consider the descend to specific action-processing rule;
+		stop the action;
+
+The report an action again part two rule is listed before the investigate player's awareness before action rule in the specific action-processing rules.
+This is the report an action again part two rule:
+	if reporting again is true:
+		consider the specific report rulebook;
+		now reporting again is false;
+		stop the action;
+
+[ Our helper phrase to report again the main action ]
+To report the main action again:
+	if the player is at-React:
+		say "[italic type][run paragraph on]";
+		now the meta flag is false;
+		now reporting again is true;
+		try the main actor's action;
+		say "[roman type][run paragraph on]";
+
+
+
 Chapter - Taking a player action
 
 [ Taking a player action will keep requesting commands until a successful (non-out of world) command is obtained. ]
@@ -293,9 +323,9 @@ The generate action rule is listed last in the for taking a player action rules.
 
 Chapter - Initiative
 
-[ Initative determines whose turn it is, and if an action puts several people at-React, the order in which they will react.
+[ Initiative determines whose turn it is, and if an action puts several people at-React, the order in which they will react.
 
-By default the initative of the main actor will be reset each round, so that the participants will take turns, though occassionally you will get two turns in a row because of the random initiative rule. ]
+By default the initiative of the main actor will be reset each round, so that the participants will take turns, though occassionally you will get two turns in a row because of the random initiative rule. ]
 
 A person has a number called the initiative.
 
@@ -568,7 +598,7 @@ A last Standard AI rule for a person (called P) (this is the select an action an
 	try the Option entry;
 	[ Store it for reactions ]
 	if P is at-Act:
-		now the main actor's action is the action name part of the Option entry;
+		now the main actor's action is the Option entry;
 
 [ Each potential action should have a First rule which will add the action to the Table of AI Combat Options.  Subsequent rules can then modify the Action Weight.
 
