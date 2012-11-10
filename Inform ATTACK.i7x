@@ -1,4 +1,4 @@
-Version 4/121102 of Inform ATTACK by Victor Gijsbers begins here.
+Version 4/121110 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -614,7 +614,7 @@ An attack modifier rule (this is the parry defence bonus rule):
 				if n is 0, say " - 0 (cannot parry against [global attacker weapon])[run paragraph on]";
 		decrease the attack strength by n;
 
-Last after an actor hitting (this is the no longer at parry or dodge after the attack rule):
+Last after reporting an actor hitting (this is the no longer at parry or dodge after the attack rule):
 	now the global defender is not at parry;
 	now the global defender is not at dodge;
 	continue the action;

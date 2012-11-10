@@ -1,4 +1,4 @@
-Version 4/121102 of Inform ATTACK Core by Victor Gijsbers begins here.
+Version 4/121110 of Inform ATTACK Core by Victor Gijsbers begins here.
 
 "The core of the Inform ATTACK system, but without the combat specific code. Think of it as the Advanced Turn-based TActical *Conflict* Kit instead."
 
