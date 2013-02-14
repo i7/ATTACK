@@ -376,7 +376,7 @@ To take no time:
 
 To say take no time:
 	take no time.
-
+	
 [ Before taking a player action we must reset the boolean. ]
 Before taking a player action (this is the reset take no time boolean rule):
 	now the take no time boolean is false.
@@ -389,6 +389,12 @@ Rule for setting action variables when acting fast (this is the acting fast acti
 After taking a player action (this is the all out of world actions are fast rule):
 	if the meta flag is true:
 		now the take no time boolean is true.
+
+This is the acting fast rule: [Stops the turn sequence rules before we reach the every turn rules.]
+	if the take no time boolean is true:
+		rule succeeds.
+
+The acting fast rule is listed before the every turn stage rule in the turn sequence rules.	
 
 Section - Examining is fast
 
