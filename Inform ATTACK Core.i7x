@@ -1,4 +1,4 @@
-Version 4/121110 of Inform ATTACK Core by Victor Gijsbers begins here.
+Version 4/130215 of Inform ATTACK Core by Victor Gijsbers begins here.
 
 "The core of the Inform ATTACK system, but without the combat specific code. Think of it as the Advanced Turn-based TActical *Conflict* Kit instead."
 
@@ -218,9 +218,6 @@ A combat round rule when the combat status is peace (this is the business as usu
 	now the main actor is the player;
 	now the command prompt is the peaceful prompt;
 	carry out the taking a player action activity;
-	[ Skip the every turn rules for out of world actions ]
-	if the meta flag is true:
-		rule succeeds;
 
 Section - Combat rules
 
@@ -250,7 +247,6 @@ A combat round rule when the combat status is player choosing (this is the playe
 		now the combat status is reactions;
 		now the player did something is true;
 		make no decision;
-	rule succeeds;
 
 A combat round rule when the combat status is reactions (this is the reactors choose reactions rule):
 	while the number of entries in the participants list is greater than 0:
@@ -393,7 +389,6 @@ After taking a player action (this is the all out of world actions are fast rule
 This is the acting fast rule: [Stops the turn sequence rules before we reach the every turn rules.]
 	if the take no time boolean is true:
 		rule succeeds.
-
 The acting fast rule is listed before the every turn stage rule in the turn sequence rules.	
 
 Section - Examining is fast
