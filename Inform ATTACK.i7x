@@ -1,4 +1,4 @@
-Version 4/121110 of Inform ATTACK by Victor Gijsbers begins here.
+Version 4/130420 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -8,7 +8,7 @@ Version 4/121110 of Inform ATTACK by Victor Gijsbers begins here.
 
 Volume - Introduction
 
-Include Inform ATTACK Core by Victor Gijsbers.
+Include version 4/130215 of Inform ATTACK Core by Victor Gijsbers.
 Include Plurality by Emily Short.
 
 Section - Saying combat numbers
@@ -578,6 +578,13 @@ Chance to win rule (this is the CTW concentration bonus rule):
 Carry out an actor going (this is the lose concentration on going rule):
 	now the concentration of the actor is 0.
 
+
+This is the player loses concentration when combat status is peace rule:
+	if combat status is peace:
+		if concentration of the player is not 0:
+			now concentration of the player is 0;
+			say "You relax your concentration.".
+The player loses concentration when combat status is peace rule is listed before the business as usual rule in the combat round rules.
 
 
 Chapter - Parrying
