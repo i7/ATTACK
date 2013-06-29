@@ -1,4 +1,4 @@
-Version 4/130420 of Inform ATTACK by Victor Gijsbers begins here.
+Version 4/130629 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -439,7 +439,25 @@ Last report an actor readying (this is the standard report readying rule):
 		otherwise:
 			say "[The actor] attempt[s] to ready [the noun], but cannot get a hold on it.".
 
+Chapter - Unreadying
 
+Unreadying is an action applying to one visible thing.
+
+Understand "unready [thing]" as unreadying. Understand "unwield [thing]" as unreadying.
+
+Does the player mean unreadying a readied weapon: it is very likely.
+
+Check unreadying (this is the can only unready what is readied rule):
+	unless the noun is a readied weapon enclosed by the actor:
+		take no time;
+		say "You are not wielding that." instead.
+		
+Carry out an actor unreadying:
+	now the noun is not readied;
+	say "You unwield [the noun].";
+	if the player encloses no readied weapon:
+		let item be a random natural weapon part of the player;
+		now item is readied.
 
 Chapter - Attacking
 
