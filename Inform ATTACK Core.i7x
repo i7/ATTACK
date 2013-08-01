@@ -1,4 +1,4 @@
-Version 4/130215 of Inform ATTACK Core by Victor Gijsbers begins here.
+Version 4/130801 of Inform ATTACK Core by Victor Gijsbers begins here.
 
 "The core of the Inform ATTACK system, but without the combat specific code. Think of it as the Advanced Turn-based TActical *Conflict* Kit instead."
 
@@ -446,6 +446,37 @@ After looking (this is the second make sure that going is not acting fast rule):
 		now the take no time boolean is false;
 		now the just moved boolean is false;
 	continue the action.
+
+Section - Vaguely going
+
+The block vaguely going rule is not listed in any rulebook.
+
+Rule for supplying a missing noun while an actor going (this is the block vaguely going and take no time rule):
+	take no time;
+	issue library message going action number 7.
+
+Section - Going nowhere
+
+The can't go that way rule is not listed in any rulebook.
+
+Check an actor going (this is the can't go that way and take no time rule):
+	if the room gone to is nothing:
+		take no time;
+		if the door gone through is nothing, stop the action with library
+			message going action number 2 for the room gone from;
+		stop the action with library message going action number 6 for the door gone through;
+
+Section - Taking what is already carried
+
+The can't take what's already taken rule is not listed in any rulebook.
+
+Check an actor taking (this is the can't take what's already taken and take no time rule):
+	if the actor is carrying the noun:
+		take no time;
+		stop the action with library message taking action number 5 for the noun;
+	if the actor is wearing the noun:
+		take no time;
+		stop the action with library message taking action number 5 for the noun.
 
 
 

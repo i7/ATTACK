@@ -1,4 +1,4 @@
-Version 4/130629 of Inform ATTACK by Victor Gijsbers begins here.
+Version 4/130801 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -373,6 +373,10 @@ Report an actor hitting a dead pc (this is the basic fatal player flavour rule):
 Report an actor hitting a dead npc (this is the basic fatal flavour rule):
 	say "[The global attacker] kill[s] [the name of the global defender].[run paragraph on]";
 
+Report the player hitting a dead pc (this is the report player suicide rule):
+	say "Your attack ends your own life.";
+	rule succeeds;
+
 
 
 Section - Aftereffects
@@ -578,11 +582,13 @@ To let (the defender - a person) lose concentration:
 		now the concentration of the defender is 0;
 		consider the lose concentration prose rules for the defender;
 
-[ The lose concentration prose rules will run as an aftereffect, and so should begin with a space ]
 The lose concentration prose rules are a person based rulebook.
 
 Last lose concentration prose rule for a person (called P) (this is the standard lose concentration prose rule):
-	say " [The P] lose[s] [bold type]concentration[roman type]![run paragraph on]";
+	if P is the player:
+		say "You lose your [bold type]concentration[roman type]!";
+	otherwise:
+		say "[The P] loses [bold type]concentration[roman type]!";
 
 Chance to win rule (this is the CTW concentration bonus rule):
 	if the concentration of the running AI is:
@@ -690,6 +696,10 @@ Chance to win rule (this is the CTW dodge bonus rule):
 	let n be the dodgability of the chosen weapon;
 	if the best defence is less than n:
 		now the best defence is n.
+
+After reading a command (this is the d might mean dodge rule):
+	if the player is at-React and the player's command matches "d":
+		say "[italic type](Perhaps you wanted to dodge? The abbreviation for that is 'do'.)[roman type][paragraph break]".
 
 
 
