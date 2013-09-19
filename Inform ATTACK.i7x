@@ -1,4 +1,4 @@
-Version 4/130801 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/130915 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -125,14 +125,11 @@ After printing the name of a readied weapon while taking inventory (this is the 
 A weapon has a number called the damage die. The damage die of a weapon is usually 6.
 A weapon has a number called the weapon damage bonus. The weapon damage bonus of a weapon is usually 0.
 
-[The dodgability of a weapon is the bonus a defender gets against it when dodging.]
-A weapon has a number called the dodgability. The dodgability of a weapon is usually 2.
+A weapon has a number called the dodge bonus. The dodge bonus of a weapon is usually 0.
 
-[The passive parry max is the maximum bonus a defender can get when parrying AGAINST this weapon.]
-A weapon has a number called the passive parry max. The passive parry max is usually 2.
+A weapon has a number called the parry-against bonus. The parry-against bonus is usually 0.
 
-[The active parry max is the maximum bonus a defender can get when parrying WITH this weapon.]
-A weapon has a number called the active parry max. The active parry max is usually 2.
+A weapon has a number called the parry-with bonus. The parry-with bonus is usually 0.
 
 Section - Weapon attack bonus
 
@@ -158,7 +155,7 @@ A natural weapon is usually privately-named.
 
 The description of a natural weapon is usually "Clenched fists, kicking feet--that kind of stuff."
 
-The damage die of a natural weapon is usually 3. The dodgability of a natural weapon is usually 2. The passive parry max of a natural weapon is usually 2. The active parry max of a natural weapon is usually 0.
+The damage die of a natural weapon is usually 3. The dodge bonus of a natural weapon is usually 0. The parry-against bonus of a natural weapon is usually 0. The parry-with bonus of a natural weapon is usually -2.
 
 Does the player mean readying a natural weapon:
 	it is very unlikely.
@@ -622,8 +619,8 @@ Check parrying (this is the cannot parry when not reacting rule):
 		take no time;
 		say "You parry, but there is no attack." instead.
 
-Carry out an actor parrying (this is the parrying changes initiative rule):
-	increase the initiative of the actor by 1.
+[Carry out an actor parrying (this is the parrying changes initiative rule):
+	increase the initiative of the actor by 1.]
 	
 Carry out an actor parrying (this is the standard carry out parrying rule):	
 	now the actor is at parry.
@@ -633,17 +630,25 @@ Report an actor parrying (this is the standard parry prose rule):
 
 An attack modifier rule (this is the parry defence bonus rule):
 	if the global defender is at parry:
-		let n be the passive parry max of global attacker weapon;
-		if the active parry max of global defender weapon is less than n:
-			now n is the active parry max of global defender weapon;
+		decrease attack strength by 2;
+		if the numbers boolean is true:
+			say " - 2 (defender parrying)[run paragraph on]";
+		let n be parry-against bonus of the global attacker weapon;
+		decrease attack strength by n;
 		if the numbers boolean is true:
 			if n is greater than 0:
-				say " - ", n, " (defender parrying)[run paragraph on]";
-			if n is 0 and active parry max of global defender weapon is 0:
-				say " - 0 (cannot parry with [global defender weapon])[run paragraph on]";
-			otherwise:
-				if n is 0, say " - 0 (cannot parry against [global attacker weapon])[run paragraph on]";
-		decrease the attack strength by n;
+				say " - ", n, " (parrying against [the global attacker weapon])[run paragraph on]";
+			if n is less than 0:
+				now n is (0 - n);
+				say " + ", n, " (parrying against [the global attacker weapon])[run paragraph on]";
+		now n is parry-with bonus of the global defender weapon;
+		decrease attack strength by n;
+		if the numbers boolean is true:
+			if n is greater than 0:
+				say " - ", n, " (parrying with [the global defender weapon])[run paragraph on]";
+			if n is less than 0:
+				now n is (0 - n);
+				say " + ", n, " (parrying with [the global defender weapon])[run paragraph on]";
 
 Last after reporting an actor hitting (this is the no longer at parry or dodge after the attack rule):
 	now the global defender is not at parry;
@@ -651,10 +656,10 @@ Last after reporting an actor hitting (this is the no longer at parry or dodge a
 	continue the action;
 
 Chance to win rule (this is the CTW parry bonus rule):
-	let n be the passive parry max of the chosen weapon;
+	let n be the parry-against bonus of the chosen weapon;
 	let item be a random readied weapon enclosed by the chosen target;
-	if the active parry max of item is less than n:
-		now n is the active parry max of item;
+	increase n by parry-with bonus of item;
+	increase n by 2;
 	if the best defence is less than n:
 		now the best defence is n.
 
@@ -679,13 +684,16 @@ Report an actor dodging (this is the standard dodge prose rule):
 
 An attack modifier rule (this is the dodge defence bonus rule):
 	if the global defender is at dodge:
-		let n be the dodgability of global attacker weapon;
+		if the numbers boolean is true:
+			say " - 2 (defender parrying)[run paragraph on]";		
+		let n be dodge bonus of global attacker weapon;
+		decrease the attack strength by n;
 		if the numbers boolean is true:
 			if n is greater than 0:
-				say " - ", n, " (defender dodging)[run paragraph on]";
-			if n is 0:
-				say " - 0 (cannot dodge)[run paragraph on]";
-		decrease the attack strength by n;
+				say " - ", n, " (dodging [the global attacker weapon])[run paragraph on]";
+			if n is less than 0:
+				now n is (0 - n);
+				say " + ", n, " (dodging [the global attacker weapon])[run paragraph on]";
 
 [ See code for parrying ]
 [Last after an actor hitting (this is the no longer at dodge after the attack rule):
@@ -693,7 +701,7 @@ An attack modifier rule (this is the dodge defence bonus rule):
 	continue the action;]
 
 Chance to win rule (this is the CTW dodge bonus rule):
-	let n be the dodgability of the chosen weapon;
+	let n be (2 + (dodge bonus of the chosen weapon));
 	if the best defence is less than n:
 		now the best defence is n.
 
@@ -736,13 +744,10 @@ An AI target selection rule for a person (called target) (this is the prefer tho
 An AI target selection rule for a person (called target) (this is the do not prefer good parriers rule):
 	let item be a random readied weapon enclosed by the running AI;
 	let item2 be a random readied weapon enclosed by the target;
-	let n be the passive parry max of item;
-	if the active parry max of item2 is less than n:
-		now n is the active parry max of item2;
-	if the dodgability of item is less than n:
-		now n is n minus the dodgability of item;
-	otherwise:
-		now n is 0;
+	let n be dodge bonus of item;
+	let m be parry-against bonus of item + parry-with bonus of item2;
+	if m > n:
+		now n is m;
 	decrease the Weight by n;
 
 [The following rule makes the actor prefer people with low defence, unless he is concentrated, in which case he prefers people with high defence. Reason: if you managed to become concentrated, you should use that bonus against otherwise tough opponents.]
@@ -800,13 +805,13 @@ An AI weapon selection rule for a weapon (called W) (this is the prefer lots of 
 	increase the Weight by the damage die of W;
 
 An AI weapon selection rule for a weapon (called W) (this is the prefer low dodgability and passive parry rule):
-	let n be the dodgability of the W;
-	if the passive parry max of the W is greater than n:
-		now n is the passive parry max of the W;
+	let n be the dodge bonus of the W;
+	if the parry-against bonus of the W is greater than n:
+		now n is the parry-against bonus of the W;
 	decrease the Weight by n;
 
 An AI weapon selection rule for a weapon (called W) (this is the prefer good active parry rule):
-	increase the Weight by the active parry max of the W divided by 2;
+	increase the Weight by the parry-with bonus of the W;
 
 An AI weapon selection rule for a weapon (called W) (this is the prefer good attack bonus rule):
 	let n be the weapon attack bonus of the W times three;
@@ -916,19 +921,19 @@ An AI action selection rule for an at-React person (called P) (this is the stand
 	if the action name part of the main actor's action is the attacking action:
 		let the attacker's weapon be a random readied weapon enclosed by the main actor;
 		let the defendant's weapon be a random readied weapon enclosed by P;
-		let dodgability be the dodgability of the attacker's weapon;
-		let parry rating be the passive parry max of the attacker's weapon;
-		if parry rating is greater than the active parry max of the defendant's weapon:
-			now parry rating is the active parry max of the defendant's weapon;
+		let dodgability be (2 + dodge bonus of the attacker's weapon);
+		let parry rating be (2 + parry-against bonus of the attacker's weapon + parry-with bonus of the defendant's weapon);
 		[ Adjust the weight of dodging ]
 		choose row with an Option of the action of P dodging in the Table of AI Action Options;
 		increase the Action Weight entry by dodgability;
+		if dodgability is less than 1:
+			decrease the Action Weight entry by 100;		
 		if parry rating is greater than dodgability:
 			decrease the Action Weight entry by 100;
 		[ Adjust the weight of parrying ]
 		choose row with an Option of the action of P parrying in the Table of AI Action Options;
 		increase the Action Weight entry by parry rating;
-		if parry rating is 0:
+		if parry rating is less than 1:
 			decrease the Action Weight entry by 100;
 		if dodgability is greater than parry rating:
 			decrease the Action Weight entry by 100.
