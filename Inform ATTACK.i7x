@@ -1,4 +1,4 @@
-Version 5/130915 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/130919 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -395,6 +395,45 @@ An aftereffects rule (this is the modify initiative based on combat results rule
 
 
 
+Book - Flow
+
+Chapter - Offensive and Defensive Flow
+
+A person has a number called offensive flow. The offensive flow of a person is usually 0.
+
+A person has a number called defensive flow. The defensive flow of a person is usually 0.
+
+An attack modifier rule (this is the offensive flow attack modifier rule):
+	let n be offensive flow of the global attacker;
+	if the numbers boolean is true:
+		unless n is 0:
+			if n > 0:
+				say " + ", n, " (offensive flow)[run paragraph on]";
+			if n < 0:
+				let m be (0 - n);
+				say " - ", m, " (offensive flow)[run paragraph on]";
+	increase the attack strength by n;
+
+An attack modifier rule (this is the defensive flow attack modifier rule):
+	let n be defensive flow of the global defender;
+	if the numbers boolean is true:
+		unless n is 0:
+			if n > 0:
+				say " - ", n, " (defensive flow)[run paragraph on]";
+			if n < 0:
+				let m be (0 - n);
+				say " + ", m, " (defensive flow)[run paragraph on]";
+	decrease the attack strength by n;
+
+An aftereffects rule (this is the lose flow when hit rule):
+	if the attack damage is greater than 0 and the global defender is alive:
+		now offensive flow of global defender is 0;
+		now defensive flow of global defender is 0.
+
+After an actor hitting (this is the lose flow after attacking rule):
+	now the offensive flow of the global attacker is 0;
+	now the defensive flow of the global attacker is 0;
+	continue the action;
 
 
 Book - Standard Combat Actions
@@ -650,9 +689,8 @@ An attack modifier rule (this is the parry defence bonus rule):
 				now n is (0 - n);
 				say " + ", n, " (parrying with [the global defender weapon])[run paragraph on]";
 
-Last after reporting an actor hitting (this is the no longer at parry or dodge after the attack rule):
+Last after reporting an actor hitting (this is the no longer at parry after the attack rule):
 	now the global defender is not at parry;
-	now the global defender is not at dodge;
 	continue the action;
 
 Chance to win rule (this is the CTW parry bonus rule):
@@ -663,7 +701,9 @@ Chance to win rule (this is the CTW parry bonus rule):
 	if the best defence is less than n:
 		now the best defence is n.
 
-
+An aftereffects rule (this is the gain offensive flow from parrying rule):
+	if the attack damage is 0 and the global defender is at parry:
+		increase offensive flow of global defender by 1.
 
 Chapter - Dodging
 
@@ -684,21 +724,17 @@ Report an actor dodging (this is the standard dodge prose rule):
 
 An attack modifier rule (this is the dodge defence bonus rule):
 	if the global defender is at dodge:
+		decrease attack strength by 2;
 		if the numbers boolean is true:
-			say " - 2 (defender parrying)[run paragraph on]";		
+			say " - 2 (defender dodging)[run paragraph on]";		
 		let n be dodge bonus of global attacker weapon;
 		decrease the attack strength by n;
 		if the numbers boolean is true:
 			if n is greater than 0:
-				say " - ", n, " (dodging [the global attacker weapon])[run paragraph on]";
+				say " - ", n, " ([the global attacker weapon] dodge bonus)[run paragraph on]";
 			if n is less than 0:
 				now n is (0 - n);
-				say " + ", n, " (dodging [the global attacker weapon])[run paragraph on]";
-
-[ See code for parrying ]
-[Last after an actor hitting (this is the no longer at dodge after the attack rule):
-	now the global defender is not at dodge;
-	continue the action;]
+				say " + ", n, " ([the global attacker weapon] dodge penalty)[run paragraph on]";
 
 Chance to win rule (this is the CTW dodge bonus rule):
 	let n be (2 + (dodge bonus of the chosen weapon));
@@ -709,6 +745,76 @@ After reading a command (this is the d might mean dodge rule):
 	if the player is at-React and the player's command matches "d":
 		say "[italic type](Perhaps you wanted to dodge? The abbreviation for that is 'do'.)[roman type][paragraph break]".
 
+Last after reporting an actor hitting (this is the no longer at dodge after the attack rule):
+	now the global defender is not at dodge;
+	continue the action;
+
+An aftereffects rule (this is the gain defensive flow from dodging rule):
+	if the attack damage is 0 and the global defender is at dodge:
+		increase defensive flow of global defender by 1.
+
+Section - Rolling
+
+Rolling is an action applying to nothing. Understand "roll" as rolling.
+
+A person can be at-roll. A person is usually not at-roll.
+
+Check rolling (this is the cannot roll when not reacting rule):
+	if the combat state of the player is not at-React:
+		take no time;
+		say "You roll, but there is no attack." instead.
+
+Carry out an actor rolling:
+	now offensive flow of actor is (offensive flow of actor + defensive flow of actor);
+	now defensive flow of actor is 0;
+	now the actor is at-roll.
+
+Report an actor rolling (this is the standard roll prose rule):
+	say "[The actor] roll[s] into the thick of combat.".
+
+An attack modifier rule (this is the roll defence bonus rule):
+	if the global defender is at-roll:
+		let n be dodge bonus of global attacker weapon;
+		decrease the attack strength by n;
+		if the numbers boolean is true:
+			if n is greater than 0:
+				say " - ", n, " ([the global attacker weapon] dodge bonus)[run paragraph on]";
+			if n is less than 0:
+				now n is (0 - n);
+				say " + ", n, " ([the global attacker weapon] dodge penalty)[run paragraph on]";
+
+Last after reporting an actor hitting (this is the no longer at roll after the attack rule):
+	now the global defender is not at-roll;
+	continue the action;
+
+An aftereffects rule (this is the gain offensive flow from rolling rule):
+	if the attack damage is 0 and the global defender is at-roll:
+		increase offensive flow of global defender by 1.
+
+Section - Blocking
+
+Blocking is an action applying to nothing. Understand "block" as rolling.
+
+A person can be at-block. A person is usually not at-block.
+
+Check blocking (this is the cannot block when not reacting rule):
+	if the combat state of the player is not at-React:
+		take no time;
+		say "You block, but there is no attack." instead.
+
+Carry out an actor blocking:
+	now defensive flow of actor is (offensive flow of actor + defensive flow of actor);
+	now offensive flow of actor is 0;
+	now the actor is at-block.
+
+Report an actor blocking (this is the standard block prose rule):
+	say "[The actor] attempt[s] to block the incoming attack.".
+	
+[No special defense bonus. Kerkerkruip adss a shield-related rule here.]	
+
+Last after reporting an actor hitting (this is the no longer at block after the attack rule):
+	now the global defender is not at-block;
+	continue the action;
 
 
 
@@ -858,6 +964,16 @@ First AI action selection rule for an at-React person (called P) (this is the co
 	now the Option entry is the action of P parrying;
 	now the Action Weight entry is 5;
 
+First AI action selection rule for an at-React person (called P) (this is the consider rolling rule):
+	choose a blank Row in the Table of AI Action Options;
+	now the Option entry is the action of P rolling;
+	now the Action Weight entry is 3;
+	
+First AI action selection rule for an at-React person (called P) (this is the consider blocking rule):
+	choose a blank Row in the Table of AI Action Options;
+	now the Option entry is the action of P blocking;
+	now the Action Weight entry is 1;
+
 First AI action selection rule for a person (called P) when the chosen weapon is not readied (this is the consider readying rule):
 	choose a blank Row in the Table of AI Action Options;
 	now the Option entry is the action of P readying the chosen weapon;
@@ -917,7 +1033,7 @@ An AI action selection rule for an at-Act person (called P) (this is the concent
 	if the concentration of the chosen target is 3:
 		increase the Action Weight entry by 2;
 
-An AI action selection rule for an at-React person (called P) (this is the standard parry and dodge against attack select rule):
+An AI action selection rule for an at-React person (called P) (this is the standard defense against attack select rule):
 	if the action name part of the main actor's action is the attacking action:
 		let the attacker's weapon be a random readied weapon enclosed by the main actor;
 		let the defendant's weapon be a random readied weapon enclosed by P;
@@ -936,7 +1052,18 @@ An AI action selection rule for an at-React person (called P) (this is the stand
 		if parry rating is less than 1:
 			decrease the Action Weight entry by 100;
 		if dodgability is greater than parry rating:
-			decrease the Action Weight entry by 100.
+			decrease the Action Weight entry by 100;
+		choose row with an Option of the action of P rolling in the Table of AI Action Options;
+		if defensive flow of P is less than 1:
+			decrease Action Weight entry by 100;
+		increase the Action Weight entry by dodgability;		
+		if a random chance of 1 in 5 succeeds:
+			increase Action Weight entry by (3 * (defensive flow of P));
+		choose row with an Option of the action of P blocking in the Table of AI Action Options;
+		if offensive flow of P is less than 1:
+			decrease Action Weight entry by 100;
+		if a random chance of 1 in 8 succeeds:
+			increase Action Weight entry by (4 * (offensive flow of P)).
 
 An AI action selection rule for a person (called P) when the chosen weapon is not readied (this is the don't attack or concentrate with an unreadied weapon rule):
 	if P is at-Act:
