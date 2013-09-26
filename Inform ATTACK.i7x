@@ -1,4 +1,4 @@
-Version 5/130919 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/260919 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -8,7 +8,7 @@ Version 5/130919 of Inform ATTACK by Victor Gijsbers begins here.
 
 Volume - Introduction
 
-Include version 4/130215 of Inform ATTACK Core by Victor Gijsbers.
+Include version 5/130919 of Inform ATTACK Core by Victor Gijsbers.
 Include Plurality by Emily Short.
 
 Section - Saying combat numbers
@@ -425,15 +425,44 @@ An attack modifier rule (this is the defensive flow attack modifier rule):
 				say " + ", m, " (defensive flow)[run paragraph on]";
 	decrease the attack strength by n;
 
+Rule for damage modifier (this is the offensive flow damage modifier rule):
+	let bonus be offensive flow of the global attacker;
+	if the numbers boolean is true:
+		unless the bonus is 0:
+			say " + ", the bonus, " (offensive flow)[run paragraph on]";
+	increase the attack damage by the bonus.
+
+Rule for damage modifier (this is the defensive flow damage modifier rule):
+	let bonus be defensive flow of the global defender;
+	if the numbers boolean is true:
+		unless the bonus is 0:
+			say " - ", the bonus, " (defensive flow)[run paragraph on]";
+	decrease the attack damage by the bonus.
+
 An aftereffects rule (this is the lose flow when hit rule):
 	if the attack damage is greater than 0 and the global defender is alive:
 		now offensive flow of global defender is 0;
 		now defensive flow of global defender is 0.
 
-After an actor hitting (this is the lose flow after attacking rule):
-	now the offensive flow of the global attacker is 0;
-	now the defensive flow of the global attacker is 0;
+After an actor hitting (this is the lose flow after unsuccessfully attacking rule):
+	unless the attack strength is greater than the defence of the global defender:
+		now the offensive flow of the global attacker is 0;
+		now the defensive flow of the global attacker is 0;
 	continue the action;
+
+To up the offensive flow of (guy - a person):
+	unless offensive flow of guy is 3:
+		increase offensive flow of guy by 1;
+		let n be (3 - offensive flow of guy);
+		if defensive flow of guy > n:
+			now defensive flow of guy is n.
+
+To up the defensive flow of (guy - a person):
+	unless defensive flow of guy is 3:
+		increase defensive flow of guy by 1;
+		let n be (3 - defensive flow of guy);
+		if offensive flow of guy > n:
+			now offensive flow of guy is n.
 
 
 Book - Standard Combat Actions
@@ -703,7 +732,7 @@ Chance to win rule (this is the CTW parry bonus rule):
 
 An aftereffects rule (this is the gain offensive flow from parrying rule):
 	if the attack damage is 0 and the global defender is at parry:
-		increase offensive flow of global defender by 1.
+		up the offensive flow of global defender.
 
 Chapter - Dodging
 
@@ -751,7 +780,7 @@ Last after reporting an actor hitting (this is the no longer at dodge after the 
 
 An aftereffects rule (this is the gain defensive flow from dodging rule):
 	if the attack damage is 0 and the global defender is at dodge:
-		increase defensive flow of global defender by 1.
+		up the defensive flow of global defender.
 
 Section - Rolling
 
@@ -789,7 +818,7 @@ Last after reporting an actor hitting (this is the no longer at roll after the a
 
 An aftereffects rule (this is the gain offensive flow from rolling rule):
 	if the attack damage is 0 and the global defender is at-roll:
-		increase offensive flow of global defender by 1.
+		up the offensive flow of global defender.
 
 Section - Blocking
 
@@ -810,7 +839,7 @@ Carry out an actor blocking:
 Report an actor blocking (this is the standard block prose rule):
 	say "[The actor] attempt[s] to block the incoming attack.".
 	
-[No special defense bonus. Kerkerkruip adss a shield-related rule here.]	
+[No special defense bonus. Kerkerkruip adds a shield-related rule here.]	
 
 Last after reporting an actor hitting (this is the no longer at block after the attack rule):
 	now the global defender is not at-block;
