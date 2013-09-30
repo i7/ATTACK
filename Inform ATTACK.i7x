@@ -1,4 +1,4 @@
-Version 5/260919 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/130930 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -463,6 +463,16 @@ To up the defensive flow of (guy - a person):
 		let n be (3 - defensive flow of guy);
 		if offensive flow of guy > n:
 			now offensive flow of guy is n.
+
+Definition: a person (called the guy) is flowing if (offensive flow of guy > 0) or (defensive flow of guy > 0).
+
+This is the everyone loses flow when combat status is peace rule:
+	if combat status is peace:
+		repeat with guy running through flowing people:
+			now offensive flow of guy is 0;
+			now defensive flow of guy is 0.
+				
+The everyone loses flow when combat status is peace rule is listed before the business as usual rule in the combat round rules.
 
 
 Book - Standard Combat Actions
