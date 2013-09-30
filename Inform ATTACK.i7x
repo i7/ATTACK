@@ -855,6 +855,34 @@ Last after reporting an actor hitting (this is the no longer at block after the 
 	now the global defender is not at-block;
 	continue the action;
 
+Section - Expose
+
+Exposing is an action applying to nothing. Understand "expose" as exposing.
+
+A person can be at-expose. A person is usually not at-expose.
+
+Check exposing (this is the cannot expose when not reacting rule):
+	if the combat state of the player is not at-React:
+		take no time;
+		say "You expose yourself, but there is no attack." instead.
+
+Carry out an actor exposing:
+	now the actor is at-expose.
+
+Report an actor exposing (this is the standard expose prose rule):
+	say "[The actor] stand[s] ready to receive the attack.".
+	
+An attack modifier rule (this is the expose defence penalty rule):
+	if the global defender is at-expose:
+		increase the attack strength by 20;
+		if the numbers boolean is true:
+			say " +  20 (defender exposing)[run paragraph on]";
+
+Last after reporting an actor hitting (this is the no longer at expose after the attack rule):
+	now the global defender is not at-expose;
+	continue the action;
+
+
 
 
 
