@@ -1,4 +1,4 @@
-Version 5/130930 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/131111 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -832,7 +832,7 @@ An aftereffects rule (this is the gain offensive flow from rolling rule):
 
 Section - Blocking
 
-Blocking is an action applying to nothing. Understand "block" as rolling.
+Blocking is an action applying to nothing. Understand "block" as blocking.
 
 A person can be at-block. A person is usually not at-block.
 
