@@ -1,4 +1,4 @@
-Version 5/131111 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/131118 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -247,6 +247,7 @@ The specification of the hitting action is "When you attack Inform ATTACK must w
 Setting action variables for hitting (this is the reset hitting variables rule):
 	now the global attacker is the actor;
 	now the global defender is the noun;
+	ready natural weapons;
 	now the global attacker weapon is a random readied weapon enclosed by the actor;
 	now the global defender weapon is a random readied weapon enclosed by the noun;
 	have the actor start pressing the noun;
