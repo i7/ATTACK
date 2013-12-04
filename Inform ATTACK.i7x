@@ -1,4 +1,4 @@
-Version 5/131118 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/131204 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -679,12 +679,16 @@ Carry out an actor going (this is the lose concentration on going rule):
 	now the concentration of the actor is 0.
 
 
-This is the player loses concentration when combat status is peace rule:
+This is the everyone loses concentration when combat status is peace rule:
 	if combat status is peace:
 		if concentration of the player is not 0:
 			now concentration of the player is 0;
-			say "You relax your concentration.".
-The player loses concentration when combat status is peace rule is listed before the business as usual rule in the combat round rules.
+			say "You relax your concentration.";
+		now world test subject is the player;
+		repeat with guy running through alive worldsharer people:
+			now concentration of guy is 0.
+			
+The everyone loses concentration when combat status is peace rule is listed before the business as usual rule in the combat round rules.
 
 
 Chapter - Parrying
@@ -1288,6 +1292,12 @@ Every turn (this is the standard increase or reset the tension rule):
 		increase the tension by 1;
 		if the tension is greater than 20:
 			now the tension is 20.
+
+This is the additional reset the tension rule:
+	if combat status is peace:
+		now tension is 0.
+	
+The additional reset the tension rule is listed before the business as usual rule in the combat round rules.	
 	
 An attack modifier rule (this is the standard tension attack modifier rule):
 	let the tension bonus be the tension divided by 2;
