@@ -1,4 +1,4 @@
-Version 5/130919 of Inform ATTACK Core by Victor Gijsbers begins here.
+Version 5/131204 of Inform ATTACK Core by Victor Gijsbers begins here.
 
 "The core of the Inform ATTACK system, but without the combat specific code. Think of it as the Advanced Turn-based TActical *Conflict* Kit instead."
 
@@ -104,6 +104,9 @@ The verb to hate (he hates, they hate, he hated, it is hated, he is hating) impl
 [ The opposing relationship makes it easier to see if two people are antagonists. ]
 Opposing relates a person (called X) to a person (called Y) when the faction of X hates the faction of Y.
 The verb to oppose (he opposes, they oppose, he opposed, it is opposed, he is opposing) implies the opposing relation.
+
+The opposition test subject is a person that varies.
+Definition: a person is opposer if it opposes opposition test subject. 
 
 Friendly hates hostile. Hostile hates friendly.
 

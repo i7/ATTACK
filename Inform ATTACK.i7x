@@ -8,7 +8,7 @@ Version 5/131204 of Inform ATTACK by Victor Gijsbers begins here.
 
 Volume - Introduction
 
-Include version 5/130919 of Inform ATTACK Core by Victor Gijsbers.
+Include version 5/131204 of Inform ATTACK Core by Victor Gijsbers.
 Include Plurality by Emily Short.
 
 Section - Saying combat numbers
