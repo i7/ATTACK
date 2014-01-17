@@ -1,4 +1,4 @@
-Version 5/131204 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/140117 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -170,6 +170,12 @@ To ready natural weapons:
 			let item be a random natural weapon part of X;
 			now item is readied.
 
+To unready natural weapons:
+	repeat with X running through all alive persons enclosed by the location:
+		if X encloses at least two readied weapons:
+			let item be a random natural weapon part of X;
+			now item is not readied.
+
 When play begins (this is the ready weapons for everyone rule):
 	repeat with X running through all alive persons:
 		if X encloses no readied weapon:
@@ -182,6 +188,7 @@ When play begins (this is the ready weapons for everyone rule):
 
 A starting the combat round rule (this is the ready natural weapons rule):
 	ready natural weapons;
+	unready natural weapons.
 
 Section - Unreadying weapons
 
