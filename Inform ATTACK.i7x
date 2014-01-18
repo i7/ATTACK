@@ -1,4 +1,4 @@
-Version 5/140117 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/140118 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -440,12 +440,12 @@ Rule for damage modifier (this is the offensive flow damage modifier rule):
 			say " + ", the bonus, " (offensive flow)[run paragraph on]";
 	increase the attack damage by the bonus.
 
-Rule for damage modifier (this is the defensive flow damage modifier rule):
+[Rule for damage modifier (this is the defensive flow damage modifier rule):
 	let bonus be defensive flow of the global defender;
 	if the numbers boolean is true:
 		unless the bonus is 0:
 			say " - ", the bonus, " (defensive flow)[run paragraph on]";
-	decrease the attack damage by the bonus.
+	decrease the attack damage by the bonus.]
 
 An aftereffects rule (this is the lose flow when hit rule):
 	if the attack damage is greater than 0 and the global defender is alive:
@@ -816,8 +816,6 @@ Check rolling (this is the cannot roll when not reacting rule):
 		say "You roll, but there is no attack." instead.
 
 Carry out an actor rolling:
-	now offensive flow of actor is (offensive flow of actor + defensive flow of actor);
-	now defensive flow of actor is 0;
 	now the actor is at-roll.
 
 Report an actor rolling (this is the standard roll prose rule):
@@ -838,8 +836,10 @@ Last after reporting an actor hitting (this is the no longer at roll after the a
 	now the global defender is not at-roll;
 	continue the action;
 
-An aftereffects rule (this is the gain offensive flow from rolling rule):
+An aftereffects rule (this is the switch to offensive flow after rolling rule):
 	if the attack damage is 0 and the global defender is at-roll:
+		now offensive flow of actor is (offensive flow of actor + defensive flow of actor);
+		now defensive flow of actor is 0;
 		up the offensive flow of global defender.
 
 Section - Blocking
@@ -866,6 +866,14 @@ Report an actor blocking (this is the standard block prose rule):
 Last after reporting an actor hitting (this is the no longer at block after the attack rule):
 	now the global defender is not at-block;
 	continue the action;
+
+An aftereffects rule (this is the gain random flow from blocking rule):
+	if the attack damage is 0 and the global defender is at-block:
+		if a random chance of 1 in 2 succeeds:
+			up the defensive flow of global defender;
+		otherwise:
+			up the offensive flow of the global defender.
+
 
 Section - Expose
 
