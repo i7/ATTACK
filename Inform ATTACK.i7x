@@ -821,7 +821,7 @@ Carry out an actor rolling:
 Report an actor rolling (this is the standard roll prose rule):
 	say "[The actor] roll[s] into the thick of combat.".
 
-An attack modifier rule (this is the roll defence bonus rule):
+[An attack modifier rule (this is the roll defence bonus rule):
 	if the global defender is at-roll:
 		let n be dodge bonus of global attacker weapon;
 		decrease the attack strength by n;
@@ -830,7 +830,7 @@ An attack modifier rule (this is the roll defence bonus rule):
 				say " - ", n, " ([the global attacker weapon] dodge bonus)[run paragraph on]";
 			if n is less than 0:
 				now n is (0 - n);
-				say " + ", n, " ([the global attacker weapon] dodge penalty)[run paragraph on]";
+				say " + ", n, " ([the global attacker weapon] dodge penalty)[run paragraph on]";]
 
 Last after reporting an actor hitting (this is the no longer at roll after the attack rule):
 	now the global defender is not at-roll;
