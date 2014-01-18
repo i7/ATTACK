@@ -870,9 +870,10 @@ Last after reporting an actor hitting (this is the no longer at block after the 
 An aftereffects rule (this is the gain random flow from blocking rule):
 	if the attack damage is 0 and the global defender is at-block:
 		if a random chance of 1 in 2 succeeds:
-			up the defensive flow of global defender;
-		otherwise:
-			up the offensive flow of the global defender.
+			if a random chance of 1 in 2 succeeds:
+				up the defensive flow of global defender;
+			otherwise:
+				up the offensive flow of the global defender.
 
 
 Section - Expose
