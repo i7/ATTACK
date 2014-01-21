@@ -1,9 +1,9 @@
-Version 5/140118 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/140121 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
 "GPL 3 licenced"
-
+ 
 
 
 Volume - Introduction
@@ -838,8 +838,8 @@ Last after reporting an actor hitting (this is the no longer at roll after the a
 
 An aftereffects rule (this is the switch to offensive flow after rolling rule):
 	if the attack damage is 0 and the global defender is at-roll:
-		now offensive flow of actor is (offensive flow of actor + defensive flow of actor);
-		now defensive flow of actor is 0;
+		now offensive flow of the global defender is (offensive flow of the global defender + defensive flow of the global defender);
+		now defensive flow of the global defender is 0;
 		up the offensive flow of global defender.
 
 Section - Blocking
