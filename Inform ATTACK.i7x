@@ -1,4 +1,4 @@
-Version 5/140121 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/140131 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -691,8 +691,7 @@ This is the everyone loses concentration when combat status is peace rule:
 		if concentration of the player is not 0:
 			now concentration of the player is 0;
 			say "You relax your concentration.";
-		now world test subject is the player;
-		repeat with guy running through alive worldsharer people:
+		repeat with guy running through alive people:
 			now concentration of guy is 0.
 			
 The everyone loses concentration when combat status is peace rule is listed before the business as usual rule in the combat round rules.
