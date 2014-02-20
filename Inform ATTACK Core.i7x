@@ -1,4 +1,4 @@
-Version 5/131204 of Inform ATTACK Core by Victor Gijsbers begins here.
+Version 5/140220 of Inform ATTACK Core by Victor Gijsbers begins here.
 
 "The core of the Inform ATTACK system, but without the combat specific code. Think of it as the Advanced Turn-based TActical *Conflict* Kit instead."
 
@@ -221,6 +221,7 @@ A combat round rule when the combat status is peace (this is the business as usu
 	now the main actor is the player;
 	now the command prompt is the peaceful prompt;
 	carry out the taking a player action activity;
+
 
 Section - Combat rules
 
@@ -655,7 +656,11 @@ Carry out an actor waiting (this is the waiting lets someone else go first rule)
 		repeat with X running through all alive not passive persons enclosed by the location:
 			if X is not the actor and the initiative of X is greater than Y:
 				now Y is the initiative of X;
-		now the initiative of the actor is Y - 2.
+		now the initiative of the actor is Y - 2;
+		if concentration of the actor > 1:
+			decrease initiative of the actor by 1;
+		if concentration of the actor > 2:
+			decrease initiative of the actor by 1.
 
 [Last report an actor waiting:
 	if the actor is not the player:

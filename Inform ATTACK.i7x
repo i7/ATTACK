@@ -1,4 +1,4 @@
-Version 5/140131 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/140220 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
