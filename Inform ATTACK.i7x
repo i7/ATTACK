@@ -1,4 +1,4 @@
-Version 5/140220 of Inform ATTACK by Victor Gijsbers begins here.
+Version 5/140507 of Inform ATTACK by Victor Gijsbers begins here.
 
 "Inform ATTACK: the Inform Advanced Turn-based TActical Combat Kit"
 
@@ -9,7 +9,7 @@ Version 5/140220 of Inform ATTACK by Victor Gijsbers begins here.
 Volume - Introduction
 
 Include version 5/131204 of Inform ATTACK Core by Victor Gijsbers.
-Include Plurality by Emily Short.
+[Include Plurality by Emily Short.] [Deprecated with Inform 6L02.]
 
 Section - Saying combat numbers
 
