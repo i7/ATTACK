@@ -25,7 +25,7 @@ The reaction prompt is a text variable. The reaction prompt is "React>".
 Section - I6 variables
 
 The meta flag is a truth state variable. The meta flag variable translates into I6 as "meta".
-The yourself text is a text variable. The yourself text variable translates into I6 as "YOURSELF__TX".
+[The yourself text is a text variable. The yourself text variable translates into I6 as "YOURSELF__TX".]
 
 [ Normally you can't set a person variable to no one, but you can like this! ]
 The stand in for no one is a person variable. The stand in for no one variable translates into I6 as "nothing".
@@ -35,10 +35,20 @@ Section - Referring to the player
 [ See manual section 2.1.3 ]
 
 [ When we talk about the player in combat events, we do not want to say "yourself". ]
-When play begins (this is the change the yourself text rule):
-	now the yourself text is "you".
+[When play begins (this is the change the yourself text rule):
+	now the yourself text is "you".]
 
 [ TODO: put back yourself where it is needed! ]
+
+[UGLY. Can we do this better??]
+[Does this automatically override the Standard Rules?]
+
+The print protagonist internal rule translates into I6 as
+	"PRINT_PROTAGONIST_INTERNAL_R" with
+	"[We]" (A),
+	"[us]" (B),
+	"[our] former self" (C).
+
 	
 
 
@@ -118,7 +128,7 @@ The hate rules are a rulebook.
 
 [ Depreciated - check the combat status instead ]
 To decide whether hate is present (deprecated):
-	consider the hate rules;
+	follow the hate rules;
 	if rule succeeded:
 		decide yes;
 	otherwise:
@@ -155,7 +165,7 @@ A combat round state is a kind of value. The combat round states are peace, comb
 The specification of a combat round state is "Represents the state of the current combat round. This value kind is stored by the combat status global variable, which determines what happens when the combat round rulebook is run."
 
 To update the combat status:
-	consider the hate rules;
+	follow the hate rules;
 	if rule succeeded:
 		now the combat status is combat;
 	otherwise:
@@ -231,7 +241,7 @@ A combat round rule when the combat status is combat (this is the determine the 
 	now the combat state of the main actor is at-Act;
 
 A combat round rule when the combat status is combat (this is the consider the starting the combat round rules rule):
-	consider the starting the combat round rules.
+	follow the starting the combat round rules.
 
 A combat round rule when the combat status is combat (this is the main actor chooses an action rule):
 	if the main actor is the player:
@@ -290,13 +300,13 @@ Reporting again is a truth state variable.
 The report an action again rule is listed before the before stage rule in the action-processing rules.
 This is the report an action again rule:
 	if reporting again is true:
-		consider the descend to specific action-processing rule;
+		follow the descend to specific action-processing rule;
 		stop the action;
 
 The report an action again part two rule is listed before the investigate player's awareness before action rule in the specific action-processing rules.
 This is the report an action again part two rule:
 	if reporting again is true:
-		consider the specific report rulebook;
+		follow the specific report rulebook;
 		now reporting again is false;
 		stop the action;
 
@@ -316,8 +326,13 @@ Chapter - Taking a player action
 [ Taking a player action will keep requesting commands until a successful (non-out of world) command is obtained. ]
 Taking a player action is an activity.
 
-The parse command rule is listed first in the for taking a player action rules.
-The generate action rule is listed last in the for taking a player action rules.
+For taking a player action:
+	follow the take-a-player-action rules.
+
+The take-a-player-action rules are an action name based rulebook.
+
+The parse command rule is listed first in the take-a-player-action rules.
+The generate action rule is listed last in the take-a-player-action rules.
 
 
 
@@ -353,7 +368,7 @@ A starting the combat round rule (this is the reset the initiative of the main a
 Section - Rebuilding the participants list
 
 To rank participants by initiative:
-	consider the initiative update rules;
+	follow the initiative update rules;
 	[ Passive people neither act nor react, so are not placed in the list. ]
 	now the participants list is the list of alive not passive persons enclosed by the location;
 	[ Sort everyone by current initiative, but if multiple people have the same initiative then randomise their relative order. ]
@@ -457,7 +472,7 @@ The block vaguely going rule is not listed in any rulebook.
 
 Rule for supplying a missing noun while an actor going (this is the block vaguely going and take no time rule):
 	take no time;
-	issue library message going action number 7.
+	say "You'll have to say which compass direction to go in." (A).
 
 Section - Going nowhere
 
@@ -466,22 +481,24 @@ The can't go that way rule is not listed in any rulebook.
 Check an actor going (this is the can't go that way and take no time rule):
 	if the room gone to is nothing:
 		take no time;
-		if the door gone through is nothing, stop the action with library
-			message going action number 2 for the room gone from;
-		stop the action with library message going action number 6 for the door gone through;
+		if the door gone through is nothing:
+			if the actor is the player:
+				say "[We] [can't go] that way." (A);
+			stop the action;
+		if the actor is the player:
+			say "[We] [can't], since [the door gone through] [lead] nowhere." (B);
+		stop the action.
 
 Section - Taking what is already carried
 
 The can't take what's already taken rule is not listed in any rulebook.
 
 Check an actor taking (this is the can't take what's already taken and take no time rule):
-	if the actor is carrying the noun:
-		take no time;
-		stop the action with library message taking action number 5 for the noun;
-	if the actor is wearing the noun:
-		take no time;
-		stop the action with library message taking action number 5 for the noun.
-
+	if the actor is carrying the noun or the actor is wearing the noun:
+		if the actor is the player:
+			take no time;
+			say "[We] already [have] [regarding the noun][those]." (A);
+		stop the action.
 
 
 Volume - AI
@@ -498,7 +515,7 @@ The running AI is a person variable.
 The chosen target is a person variable.
 
 To run the AI rules for (P - a person):
-	consider AI rules of P for P;
+	follow AI rules of P for P;
 
 [ Our standard AI works in three stages.
 	First, we choose a person to attack--if we were to attack.
@@ -622,7 +639,7 @@ The AI action selection rules are a person based rulebook.
 
 A last Standard AI rule for a person (called P) (this is the select an action and do it rule):
 	blank out the whole of the Table of AI Action Options;
-	consider the AI action selection rules for P;
+	follow the AI action selection rules for P;
 	sort the Table of AI Action Options in random order;
 	sort the Table of AI Action Options in reverse Action Weight order;
 	#if debug and showing weightings;
