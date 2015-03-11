@@ -18,9 +18,9 @@ Section - Default texts
 [ The author may want to change these texts, so they are collected here in one section. ]
 
 [ Change these if you indicate in some other way how the player is acting, or if the Act/React cycle doesn't make sense for your situation. ]
-The peaceful prompt is a text variable. The peaceful prompt is ">".
-The action prompt is a text variable. The action prompt is "Act>".
-The reaction prompt is a text variable. The reaction prompt is "React>".
+The peaceful prompt is a text variable. The peaceful prompt is usually ">".
+The action prompt is a text variable. The action prompt is usually "Act>".
+The reaction prompt is a text variable. The reaction prompt is usually "React>".
 
 Section - I6 variables
 
