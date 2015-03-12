@@ -87,11 +87,11 @@ To say the names of (L - a list of people):
 
 Before printing the name of a dead person (called body) (this is the improper print dead property rule):
 	if the printing dead property is true and the body is improper-named:
-		say "dead [run paragraph on]".
+		say "dead [run paragraph on]" (A).
 
 After printing the name of a dead person (called body) (this is the proper print dead property rule):
 	if the printing dead property is true and the body is proper-named:
-		say "'s [if body is plural-named]bodies[otherwise]body[end if]".
+		say "'s [if body is plural-named]bodies[otherwise]body[end if]" (A).
 
 Understand "body/bodies" as a person.
 Understand "body/bodies of" as a person.
@@ -536,12 +536,12 @@ Section - Switching weightings on and off - not for release
 Switching weightings on is an action out of world. Understand "weightings on" as switching weightings on.
 Carry out switching weightings on (this is the standard switching weightings on rule):
 	now show AI weightings is true;
-	say "You will now see the AI weightings.".
+	say "You will now see the AI weightings." (A).
 
 Switching weightings off is an action out of world. Understand "weightings off" as switching weightings off.
 Carry out switching weightings off (this is the standard switching weightings off rule):
 	now show AI weightings is false;
-	say "You will no longer see the AI weightings.".
+	say "You will no longer see the AI weightings." (A).
 
 Chapter - The pressing relation
 
