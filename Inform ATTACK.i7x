@@ -492,6 +492,10 @@ Book - Standard Combat Actions
 
 Chapter - Readying
 
+[Update note: Explicitly made ready a verb.]
+
+To ready is a verb.
+
 Readying is an action applying to one visible thing.
 
 Understand "ready [thing]" as readying. Understand "wield [thing]" and "use [weapon]" as readying.
@@ -1211,6 +1215,17 @@ Check attacking (this is the cannot attack when out of ammo rule):
 		say "[out of ammo text of item][paragraph break]" instead.
 
 Section - Reloading
+[Update note: Adding some new verb definitions.]
+
+ To finish is a verb.
+
+To reload is a verb.
+
+A weapon has a verb called the reload verb. The reload verb of a weapon is usually the verb reload.
+
+ To start is a verb.
+
+to continue is a verb.
 
 Reloading is an action applying to one carried thing.
 
@@ -1245,9 +1260,10 @@ Carry out an actor reloading (this is the standard carry out reloading rule):
 	
 Report an actor reloading (this is the standard report reloading rule):
 	if the current load time of the noun is the maximum load time of the noun:
-		say "[The actor] [if the maximum load time of the noun is 1][reload text of the noun][s][otherwise]finish[es] [reload stem text of the noun]ing[end if] [the noun].";
+		[update note: Altered the text in this rule to bring it more in line with the current version of inform.]
+		say "[The actor] [if the maximum load time of the noun is 1][adapt reload verb of the noun][otherwise][finish] [present participle of reload verb of the noun][end if] [the noun].";
 	otherwise:
-		say "[The actor] [if the current load time of the noun plus 1 is the maximum load time of the noun]start[s][otherwise]continue[s][end if] [reload stem text of the noun]ing [the noun].".
+		say "[The actor] [if the current load time of the noun plus 1 is the maximum load time of the noun][start][otherwise][continue][end if] [present participle of reload verb of the noun] [the noun].".
 
 Section - Reloading and choosing a weapon AI rules
 
